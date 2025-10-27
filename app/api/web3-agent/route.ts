@@ -134,6 +134,34 @@ export async function POST(req: Request) {
           case 'chain_status':
             context = await cachedClient.getChainHealth(chainId);
             break;
+          case 'transaction_info':
+          case 'transaction_summary':
+          case 'transaction_logs':
+            if (parsedQuery.entities.txHash) {
+              console.log('Looking up transaction:', parsedQuery.entities.txHash);
+              context = await cachedClient.getTransactionInfo(chainId, parsedQuery.entities.txHash);
+            } else {
+              context = { error: 'Transaction hash not provided' };
+            }
+            break;
+          case 'token_transfers':
+            if (parsedQuery.entities.address) {
+              console.log('Looking up token transfers for:', parsedQuery.entities.address);
+              const limit = parsedQuery.entities.limit || 50;
+              context = await cachedClient.getTokenTransfers(chainId, parsedQuery.entities.address, limit);
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
+          case 'nft_holdings':
+            if (parsedQuery.entities.address) {
+              console.log('Looking up NFT holdings for:', parsedQuery.entities.address);
+              const limit = parsedQuery.entities.limit || 50;
+              context = await cachedClient.getNFTTokens(chainId, parsedQuery.entities.address, limit);
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
         }
       } catch (error) {
         console.error('Error fetching blockchain data:', error);
