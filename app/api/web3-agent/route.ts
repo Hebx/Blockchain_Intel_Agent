@@ -1,4 +1,4 @@
-import { streamText, convertToModelMessages } from 'ai';
+import { streamText, generateText, convertToModelMessages } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { getCachedBlockscoutClient } from '@/lib/web3/cached-blockscout';
 import { parseWeb3Query, type ParsedQuery } from '@/lib/web3/query-parser';
@@ -245,37 +245,36 @@ export async function POST(req: Request) {
 }
 
 /**
- * Stream cached response using text-to-speech streaming
- * Reuses the AI SDK to generate proper streaming format
+ * Stream cached response in proper AI SDK format
  */
 function streamCachedResponse(text: string): Response {
-  // For cached responses, we need to stream them properly
-  // Use generateText to create the proper format
+  // Return cached text in AI SDK streaming format
+  const encoder = new TextEncoder();
+  let buffer = '';
+
+  // Wrap in proper AI SDK message format
+  buffer += '0:""\n';
+  
+  // Add text chunks
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const escapedChar = char.replace(/"/g, '\\"');
+    buffer += `0:"${escapedChar}"\n`;
+  }
+
+  // Add finish delimiter
+  buffer += 'd:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":0,"totalTokens":0}}\n';
+
   const stream = new ReadableStream({
-    async start(controller) {
-      const encoder = new TextEncoder();
-      
-      // Wrap the cached text in proper AI SDK streaming format
-      // Format: '0:""\n' for start, then text chunks
-      controller.enqueue(encoder.encode('0:""\n'));
-      
-      // Split text into chunks and send
-      const chunkSize = 1;
-      for (let i = 0; i < text.length; i += chunkSize) {
-        const chunk = text.slice(i, i + chunkSize);
-        const escapedChunk = chunk.replace(/"/g, '\\"');
-        controller.enqueue(encoder.encode(`0:"${escapedChunk}"\n`));
-      }
-      
-      // Send finish message
-      controller.enqueue(encoder.encode('d:{"finishReason":"stop","usage":{}}\n'));
-      
+    start(controller) {
+      const uint8Array = encoder.encode(buffer);
+      controller.enqueue(uint8Array);
       controller.close();
     },
   });
 
   return new Response(stream, {
-    headers: { 
+    headers: {
       'Content-Type': 'text/plain; charset=utf-8',
     },
   });
