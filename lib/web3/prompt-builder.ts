@@ -53,12 +53,7 @@ function formatContextData(context: any): string {
   // Format balance information properly - remove raw values completely
   const formattedContext = { ...context };
   
-  // Remove raw wei balance field completely
-  if (formattedContext.coin_balance) {
-    delete formattedContext.coin_balance;
-  }
-  
-  // Convert and add formatted balance
+  // Convert and add formatted balance BEFORE deleting the raw field
   if (context.coin_balance && typeof context.coin_balance === 'string') {
     // Convert wei to ETH (divide by 10^18)
     const wei = BigInt(context.coin_balance);
@@ -69,6 +64,9 @@ function formatContextData(context: any): string {
     formattedContext.balance_eth = `${eth.toFixed(6)} ETH`;
     formattedContext.balance_usd = `$${usdValue.toFixed(2)} USD`;
     formattedContext.balance = `${formattedContext.balance_eth} (${formattedContext.balance_usd})`;
+    
+    // Now remove the raw wei balance field completely
+    delete formattedContext.coin_balance;
   }
   
   formatted += JSON.stringify(formattedContext, null, 2);
