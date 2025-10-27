@@ -1,0 +1,54 @@
+name: "web3-ai-agent"
+category: "Tooling"
+description: "AI-powered Web3 agent using Vercel AI SDK + Blockscout MCP"
+version: "1.0.0"
+
+containers:
+  - name: web3-agent
+    image: web3-ai-agent:latest
+    ports:
+      - container: 3000
+        host: 3000
+        protocol: tcp
+    resources:
+      cpu: "1"
+      memory: "2Gi"
+    env:
+      - name: VERCEL_AI_KEY
+        value: "${VERCEL_AI_KEY}"
+        required: true
+      - name: OPENAI_API_KEY
+        value: "${OPENAI_API_KEY}"
+        required: false
+      - name: ANTHROPIC_API_KEY
+        value: "${ANTHROPIC_API_KEY}"
+        required: false
+      - name: BLOCKSCOUT_MCP_URL
+        value: "https://mcp.blockscout.com"
+      - name: DEFAULT_CHAIN
+        value: "ethereum"
+      - name: NODE_ENV
+        value: "production"
+      - name: REDIS_URL
+        value: "${REDIS_URL}"
+        required: false
+      - name: PORT
+        value: "3000"
+    health_check:
+      path: /
+      port: 3000
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+scaling:
+  min_instances: 1
+  max_instances: 5
+  scale_metric: cpu_usage
+  scale_threshold: 70
+
+metadata:
+  author: "NodeOps Team"
+  website: "https://nodeops.xyz"
+  documentation: "https://github.com/nodeops-io/web3-agent-node"
+
