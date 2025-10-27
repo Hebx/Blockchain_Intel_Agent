@@ -22,6 +22,8 @@ export function buildFullAccountAnalysisPrompt(context: AnalysisContext): string
   
   return `You are conducting a comprehensive blockchain forensic analysis for address ${address} on ${chainName}.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## ANALYSIS FRAMEWORK
 
 Execute this multi-part investigation:
@@ -103,6 +105,8 @@ export function buildChainOfCustodyPrompt(context: AnalysisContext): string {
   const { address, chainName, data, additionalData } = context;
   
   return `You are conducting chain-of-custody forensic research for ${address} on ${chainName}.
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 ## INVESTIGATION OBJECTIVES
 
@@ -190,6 +194,8 @@ export function buildDeFiAnalysisPrompt(context: AnalysisContext): string {
   
   return `You are analyzing DeFi activity for ${address} on ${chainName}.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## DEFI ANALYSIS FRAMEWORK
 
 ### PROTOCOL INTERACTIONS
@@ -276,6 +282,8 @@ export function buildNFTPortfolioAnalysisPrompt(context: AnalysisContext): strin
   
   return `You are conducting a comprehensive NFT portfolio analysis for ${address} on ${chainName}.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## NFT ANALYSIS FRAMEWORK
 
 ### COLLECTION PROFILE
@@ -360,6 +368,8 @@ export function buildTransactionFlowAnalysisPrompt(context: AnalysisContext): st
   const { txHash, chainName, data, additionalData } = context;
   
   return `You are analyzing transaction ${txHash} on ${chainName} in forensic detail.
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 ## TRANSACTION ANALYSIS FRAMEWORK
 
@@ -459,6 +469,8 @@ export function buildMultiAddressAnalysisPrompt(context: AnalysisContext): strin
   const addresses = additionalData?.addresses || [];
   
   return `You are conducting comparative analysis across multiple addresses on ${context.chainName}.
+
+## CRITICAL: ALWAYS start your response with: "On ${context.chainName}:"
 
 ## COMPARATIVE ANALYSIS FRAMEWORK
 

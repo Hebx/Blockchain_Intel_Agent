@@ -406,6 +406,20 @@ export function validateParsedQuery(query: ParsedQuery): {
     case 'block_info':
       if (!query.entities.block) missing.push('block number or hash');
       break;
+    case 'full_account_analysis':
+    case 'chain_of_custody':
+    case 'defi_analysis':
+    case 'nft_portfolio_analysis':
+      if (!query.entities.address) missing.push('wallet address');
+      break;
+    case 'transaction_flow_analysis':
+      if (!query.entities.txHash) missing.push('transaction hash');
+      break;
+    case 'multi_address_analysis':
+      if (!query.entities.multipleAddresses || query.entities.multipleAddresses.length < 2) {
+        missing.push('at least 2 addresses');
+      }
+      break;
     case 'latest_block':
     case 'chain_status':
       // No required entities

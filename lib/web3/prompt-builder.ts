@@ -13,7 +13,8 @@ export function buildWeb3Prompt(
   const analysisInstructions = `
 You are an expert blockchain analyst AI assistant powered by real-time blockchain data from Blockscout for the ${chainName} blockchain.
 
-## IMPORTANT:
+## CRITICAL INSTRUCTIONS:
+- ALWAYS start your response with: "On ${chainName}:"
 - You are analyzing data from the ${chainName} blockchain
 - Use the provided blockchain data to answer queries accurately
 - ALWAYS provide a helpful response, even if specific data is unavailable
@@ -142,7 +143,9 @@ Please provide a helpful response that:
   }
 
   return `
-Analyze the account ${address} on ${chainName}:
+You are analyzing account ${address} on ${chainName}:
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 1. What type of account is this? (EOA, Contract, etc.)
 2. What are the main activities of this account?
@@ -185,7 +188,9 @@ Please provide a helpful response that:
   }
 
   return `
-Analyze the token ${tokenAddress} on ${chainName}:
+You are analyzing token ${tokenAddress} on ${chainName}:
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 1. Token distribution and holders
 2. Major holders and their percentages
@@ -219,7 +224,9 @@ Please provide a helpful response acknowledging the request and explaining the d
   }
 
   return `
-Analyze recent events for contract ${contractAddress} on ${chainName}:
+You are analyzing recent events for contract ${contractAddress} on ${chainName}:
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 1. What types of events are being emitted?
 2. Are there any patterns or anomalies?
@@ -244,7 +251,9 @@ Please provide general information about ${chainName} blockchain status and what
   }
 
   return `
-Provide a network health summary for ${chainName}:
+You are providing a network health summary for ${chainName}:
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 1. Current network status
 2. Latest block information
@@ -288,6 +297,8 @@ Please provide a helpful response that:
 
   return `
 You are analyzing transaction ${txHash} on the ${chainName} blockchain.
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 ## Transaction Analysis Tasks:
 
@@ -336,6 +347,8 @@ Please provide a helpful response acknowledging the request and explaining the d
   return `
 You are analyzing token transfers for address ${address} on the ${chainName} blockchain.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## Transfer Analysis Tasks:
 
 1. **Transfer Patterns**: Identify patterns in the token transfers (frequency, amounts, direction)
@@ -383,6 +396,8 @@ Please provide a helpful response acknowledging the request and explaining the d
   return `
 You are analyzing NFT holdings for address ${address} on the ${chainName} blockchain.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## NFT Analysis Tasks:
 
 1. **Portfolio Composition**: What NFT collections does this address own?
@@ -422,6 +437,8 @@ Provide a helpful response explaining what this typically means (e.g., simple va
   return `
 Decode and explain the events emitted by transaction ${txHash} on the ${chainName} blockchain.
 
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
+
 ## Event Decoding Tasks:
 
 1. **Event Identification**: What smart contract events were emitted?
@@ -448,7 +465,9 @@ export function buildGasAnalysisPrompt(txData: any, chainName: string = 'Ethereu
   }
 
   return `
-Analyze the gas usage for this transaction on the ${chainName} blockchain.
+You are analyzing gas usage for this transaction on the ${chainName} blockchain.
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 ## Gas Analysis Tasks:
 
@@ -499,6 +518,8 @@ Please provide a helpful response that:
 
   return `
 You are analyzing block ${blockNumberOrHash} on the ${chainName} blockchain.
+
+## CRITICAL: ALWAYS start your response with: "On ${chainName}:"
 
 ## Block Analysis Tasks:
 

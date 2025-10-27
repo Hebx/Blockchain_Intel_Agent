@@ -57,13 +57,18 @@ export async function POST(req: Request) {
       .digest('hex');
     const aiOutputKey = generateAIOutputCacheKey(queryHash);
 
-    // 5. Check AI output cache
+    // 5. Check AI output cache  
     const cacheManager = getCacheManager();
     const cachedOutput = await cacheManager.get(aiOutputKey);
     
     if (cachedOutput) {
       console.log('Cache HIT for AI output');
-      return streamCachedResponse(cachedOutput);
+      // Return cached response directly as streaming response
+      const result = streamText({
+        model: openai('gpt-4o'),
+        prompt: cachedOutput,
+      });
+      return result.toUIMessageStreamResponse();
     }
 
     console.log('Cache MISS for AI output - fetching data');
@@ -208,7 +213,7 @@ export async function POST(req: Request) {
 
     // 9. Stream AI response
     const result = streamText({
-      model: openai('gpt-4o-mini'),
+      model: openai('gpt-4o'),
       prompt,
       onFinish: async ({ text, usage }) => {
         console.log(`AI Response completed in ${Date.now() - startTime}ms`);
@@ -244,39 +249,4 @@ export async function POST(req: Request) {
   }
 }
 
-/**
- * Stream cached response in proper AI SDK format
- */
-function streamCachedResponse(text: string): Response {
-  // Return cached text in AI SDK streaming format
-  const encoder = new TextEncoder();
-  let buffer = '';
-
-  // Wrap in proper AI SDK message format
-  buffer += '0:""\n';
-  
-  // Add text chunks
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i];
-    const escapedChar = char.replace(/"/g, '\\"');
-    buffer += `0:"${escapedChar}"\n`;
-  }
-
-  // Add finish delimiter
-  buffer += 'd:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":0,"totalTokens":0}}\n';
-
-  const stream = new ReadableStream({
-    start(controller) {
-      const uint8Array = encoder.encode(buffer);
-      controller.enqueue(uint8Array);
-      controller.close();
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-    },
-  });
-}
 

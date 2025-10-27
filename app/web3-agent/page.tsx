@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ChainBadge from '@/components/web3/ChainBadge';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { ChevronLeft, Sparkles, TrendingUp, Wallet, Coins, MessageSquare } from 'lucide-react';
+import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare } from 'lucide-react';
 
 export default function Web3AgentPage() {
   const router = useRouter();
@@ -33,19 +33,9 @@ export default function Web3AgentPage() {
   }, [chainId]);
 
   useEffect(() => {
-    if (!conversationIdRef.current) {
-      // Try to get from session storage
-      const stored = sessionStorage.getItem('web3_agent_conversation_id');
-      if (stored) {
-        conversationIdRef.current = stored;
-        setCurrentChatId(stored);
-      } else {
-        // Generate new conversation ID
-        conversationIdRef.current = `conv_${Date.now()}_${Math.random().toString(36)}`;
-        sessionStorage.setItem('web3_agent_conversation_id', conversationIdRef.current);
-        setCurrentChatId(conversationIdRef.current);
-      }
-    }
+    // Generate NEW conversation ID for each page load (new tab = new context)
+    conversationIdRef.current = `conv_${Date.now()}_${Math.random().toString(36)}`;
+    setCurrentChatId(conversationIdRef.current);
     
     // Load chat history from localStorage
     const stored = localStorage.getItem('web3_agent_chats');
@@ -63,7 +53,6 @@ export default function Web3AgentPage() {
     const newChatId = `conv_${Date.now()}_${Math.random().toString(36)}`;
     conversationIdRef.current = newChatId;
     setCurrentChatId(newChatId);
-    sessionStorage.setItem('web3_agent_conversation_id', newChatId);
     // Clear messages by resetting the page
     router.push('/web3-agent');
   };
@@ -71,7 +60,6 @@ export default function Web3AgentPage() {
   const handleSelectChat = (chatId: string) => {
     conversationIdRef.current = chatId;
     setCurrentChatId(chatId);
-    sessionStorage.setItem('web3_agent_conversation_id', chatId);
     router.push('/web3-agent');
   };
 
@@ -82,11 +70,6 @@ export default function Web3AgentPage() {
     if (chatId === currentChatId) {
       handleNewChat();
     }
-  };
-
-  const handleBackClick = () => {
-    // Just refresh the page to show welcome screen
-    router.push('/web3-agent');
   };
 
   // Create custom transport that modifies the fetch to include chainId
@@ -161,14 +144,6 @@ export default function Web3AgentPage() {
                 onClick={() => setShowSidebar(!showSidebar)}
               >
                 <MessageSquare className="h-5 w-5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:bg-white/20"
-                onClick={handleBackClick}
-              >
-                <ChevronLeft className="h-5 w-5" />
               </Button>
               <div>
                 <h1 className="text-2xl font-bold flex items-center gap-2">
