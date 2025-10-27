@@ -50,25 +50,31 @@ function formatContextData(context: any): string {
   // Format the context nicely for AI with unit conversions
   let formatted = 'Blockchain Data:\n';
   
-  // Format balance information properly
+  // Format balance information properly - remove raw values completely
   const formattedContext = { ...context };
+  
+  // Remove raw wei balance field completely
+  if (formattedContext.coin_balance) {
+    delete formattedContext.coin_balance;
+  }
+  
+  // Convert and add formatted balance
   if (context.coin_balance && typeof context.coin_balance === 'string') {
     // Convert wei to ETH (divide by 10^18)
     const wei = BigInt(context.coin_balance);
     const eth = Number(wei) / 1e18;
     const usdValue = eth * (parseFloat(context.exchange_rate) || 0);
     
-    // Replace coin_balance with human-readable ETH value
-    formattedContext.balance = `${eth.toFixed(6)} ETH ($${usdValue.toFixed(2)} USD)`;
-    
-    // Keep raw values for reference but de-emphasize
-    formattedContext.balance_wei_raw = context.coin_balance;
+    // Add only the formatted balance in ETH and USD
+    formattedContext.balance_eth = `${eth.toFixed(6)} ETH`;
+    formattedContext.balance_usd = `$${usdValue.toFixed(2)} USD`;
+    formattedContext.balance = `${formattedContext.balance_eth} (${formattedContext.balance_usd})`;
   }
   
   formatted += JSON.stringify(formattedContext, null, 2);
   formatted += '\n\nCRITICAL: The "balance" field shows the actual ETH amount and USD value.\n';
-  formatted += 'DO NOT reference coin_balance or balance_wei_raw when discussing balances with users.\n';
-  formatted += 'Always use the "balance" field which is in ETH format.\n\n';
+  formatted += 'When discussing balances, ALWAYS use the "balance" field only.\n';
+  formatted += 'NEVER mention any wei values or raw numbers.\n\n';
   formatted += 'Please analyze this data and answer the user query based on the provided blockchain information.';
   
   return formatted;
