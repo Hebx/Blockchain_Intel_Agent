@@ -93,7 +93,7 @@ export async function POST(req: Request) {
             break;
           case 'token_holders':
             // Try to resolve token symbol to address
-            let tokenAddress = parsedQuery.entities.token;
+            let tokenAddress: string | null = parsedQuery.entities.token || null;
             
             // If no token is specified, check if we can derive from the query
             if (!tokenAddress && query.includes('USDC')) {
