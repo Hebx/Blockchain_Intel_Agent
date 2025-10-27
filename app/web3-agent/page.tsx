@@ -296,10 +296,10 @@ export default function Web3AgentPage() {
                 size="sm"
                 className={`text-white hover:bg-white/20 ${skipCache ? 'bg-white/30' : ''}`}
                 onClick={() => setSkipCache(!skipCache)}
-                title={skipCache ? 'Cache enabled - click to disable' : 'Cache disabled - click to enable'}
+                title={skipCache ? 'Cache bypassed - click to enable cache' : 'Cache enabled - click to bypass'}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
-                {skipCache ? 'Cache ON' : 'Cache OFF'}
+                {skipCache ? 'Cache OFF' : 'Cache ON'}
               </Button>
               <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
             </div>
