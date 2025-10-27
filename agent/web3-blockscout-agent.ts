@@ -3,15 +3,17 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { ToolLoopAgent, type InferAgentUIMessage } from 'ai';
 import { experimental_createMCPClient } from '@ai-sdk/mcp';
 import { getCachedBlockscoutClient } from '@/lib/web3/cached-blockscout';
+import { getWeb3SystemInstructions } from '@/lib/web3/system-instructions';
 
 /**
  * Create Web3 Blockscout agent with OpenAI model
+ * Uses comprehensive system instructions from the Web3 documentation
  */
 export function createWeb3BlockscoutAgent() {
   const blockscoutUrl = process.env.BLOCKSCOUT_MCP_URL || 'https://mcp.blockscout.com';
 
   const agent = new ToolLoopAgent({
-    model: openai('gpt-5-mini'), // Using GPT-5-mini for cost-effective reasoning
+    model: openai('gpt-4o'), // Using GPT-4o for better reasoning
     providerOptions: {
       openai: {
         mcpServers: [
@@ -22,11 +24,6 @@ export function createWeb3BlockscoutAgent() {
           },
         ],
       },
-    },
-    maxSteps: 10, // Allow multi-step reasoning
-    stopWhen: ({ toolResults }) => {
-      // Stop if we've had multiple successful tool calls
-      return toolResults.length >= 5;
     },
   });
 
@@ -53,8 +50,9 @@ export type Web3AgentMessage = InferAgentUIMessage<ReturnType<typeof createWeb3B
  */
 export async function getMCPClient() {
   const blockscoutUrl = process.env.BLOCKSCOUT_MCP_URL || 'https://mcp.blockscout.com';
-  const url = new URL('/mcp/server', blockscoutUrl);
-  const transport = new StreamableHTTPClientTransport(url.toString());
+  const serverUrl = new URL(blockscoutUrl);
+  const mcpServerUrl = `${serverUrl.href}/mcp/server`;
+  const transport = new StreamableHTTPClientTransport(new URL(mcpServerUrl));
 
   const client = await experimental_createMCPClient({
     transport,
@@ -93,11 +91,9 @@ export class CachedWeb3Agent {
       case 'latest_block':
         return await client.getLatestBlock(params.chain);
       case 'token_holders':
-        return await client.getTokenHolders(params.token, params.limit, params.chain);
+        return await client.getTokenHolders(params.chain, params.token, params.limit);
       case 'account_summary':
-        return await client.getAccountSummary(params.address, params.chain);
-      case 'contract_events':
-        return await client.getContractEvents(params.contract, params.limit, params.chain);
+        return await client.getAddressInfo(params.chain, params.address);
       case 'chain_status':
         return await client.getChainHealth(params.chain);
       default:
