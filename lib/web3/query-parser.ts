@@ -67,6 +67,21 @@ function extractLimit(text: string): number | undefined {
  */
 export function parseWeb3Query(input: string): ParsedQuery {
   const lowerInput = input.toLowerCase();
+  const trimmedInput = input.trim();
+
+  // Check if the entire query is just an Ethereum address
+  // This handles direct address queries like "0x1234..." or "analyze 0x1234"
+  const addressFromQuery = extractAddress(input);
+  if (addressFromQuery && (trimmedInput === addressFromQuery || trimmedInput.toLowerCase().includes(addressFromQuery.toLowerCase()))) {
+    return {
+      type: 'account_summary',
+      entities: {
+        address: addressFromQuery,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
 
   // Check for latest block queries
   if (
