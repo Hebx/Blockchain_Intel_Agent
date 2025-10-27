@@ -22,9 +22,12 @@ export async function POST(req: Request) {
     const { messages, conversationId } = await req.json();
     console.log('Received messages:', JSON.stringify(messages, null, 2));
     
-    // Extract query - handle both { content: string } and { text: string } formats
+    // Extract query - handle multiple message formats
     const lastMessage = messages[messages.length - 1];
-    const query = lastMessage?.content || lastMessage?.text || '';
+    const query = lastMessage?.parts?.[0]?.text || 
+                  lastMessage?.content || 
+                  lastMessage?.text || 
+                  '';
     
     console.log('Extracted query:', query);
 
