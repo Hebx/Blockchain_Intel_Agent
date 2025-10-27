@@ -331,6 +331,40 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Get contract ABI
+   * GET /api/v2/smart-contracts/{address_hash}
+   */
+  async getContractABI(chainId: number, contractAddress: string): Promise<any> {
+    try {
+      const data = await this.makeBlockscoutRequest(
+        chainId,
+        `/api/v2/smart-contracts/${contractAddress}`
+      );
+      return data;
+    } catch (error) {
+      console.error(`Error fetching ABI for ${contractAddress}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get contract source code
+   * Uses the smart contract endpoint which includes source code
+   */
+  async getContractSourceCode(chainId: number, contractAddress: string): Promise<any> {
+    try {
+      const data = await this.makeBlockscoutRequest(
+        chainId,
+        `/api/v2/smart-contracts/${contractAddress}`
+      );
+      return data;
+    } catch (error) {
+      console.error(`Error fetching source code for ${contractAddress}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Resolve ENS name to address
    * Note: Currently only supported on Ethereum mainnet
    */

@@ -359,6 +359,46 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Get contract ABI with caching
+   */
+  async getContractABI(
+    chainId: number = 1,
+    contractAddress: string
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('contract_abi', chainId.toString(), contractAddress);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getContractABI(chainId, contractAddress);
+      },
+      3600 * 24, // Cache ABIs for 24 hours (rarely change)
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
+   * Get contract source code with caching
+   */
+  async getContractSourceCode(
+    chainId: number = 1,
+    contractAddress: string
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('contract_source', chainId.toString(), contractAddress);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getContractSourceCode(chainId, contractAddress);
+      },
+      3600 * 24, // Cache source code for 24 hours
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
    * Resolve ENS name to address
    */
   async resolveENS(name: string): Promise<string | null> {
