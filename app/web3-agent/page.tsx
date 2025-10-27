@@ -14,7 +14,7 @@ import ErrorDisplay from '@/components/web3/ErrorDisplay';
 import { LoadingState } from '@/components/web3/LoadingStates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare, Blocks, Activity, Zap } from 'lucide-react';
+import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare, Blocks, Activity, Zap, RefreshCw } from 'lucide-react';
 import { chatRepository } from '@/lib/db/chat-repository';
 import type { ChatWithMetadata, MessageWithMetadata } from '@/lib/db/chat-repository';
 
@@ -136,6 +136,8 @@ export default function Web3AgentPage() {
     }
   };
 
+  const [skipCache, setSkipCache] = useState(false);
+
   // Create custom transport that modifies the fetch to include chainId
   // Use ref to get current chainId without memoization dependency
   const customTransport = useMemo(() => {
@@ -146,7 +148,7 @@ export default function Web3AgentPage() {
         if (init?.body && typeof init.body === 'string') {
           try {
             const bodyData = JSON.parse(init.body);
-            init.body = JSON.stringify({ ...bodyData, chainId: chainIdRef.current });
+            init.body = JSON.stringify({ ...bodyData, chainId: chainIdRef.current, skipCache });
           } catch (e) {
             // If parsing fails, just use original body
           }
@@ -154,7 +156,7 @@ export default function Web3AgentPage() {
         return globalThis.fetch(input, init);
       }
     });
-  }, []); // Empty deps - uses ref for current value
+  }, [skipCache]); // Include skipCache in deps
 
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     transport: customTransport,
@@ -288,7 +290,19 @@ export default function Web3AgentPage() {
                 <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
               </div>
             </div>
-            <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`text-white hover:bg-white/20 ${skipCache ? 'bg-white/30' : ''}`}
+                onClick={() => setSkipCache(!skipCache)}
+                title={skipCache ? 'Cache enabled - click to disable' : 'Cache disabled - click to enable'}
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                {skipCache ? 'Cache ON' : 'Cache OFF'}
+              </Button>
+              <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
+            </div>
           </div>
         </header>
 
