@@ -1,0 +1,17 @@
+---
+description: Code style and conventions for this project
+globs: "*.ts, *.tsx"
+alwaysApply: false
+---
+
+# Code Style & Conventions
+
+- Use TypeScript strict mode; no `any`.
+- Prefer async/await; no `.then()` chaining.
+- Name services like `blockscoutService`, `aiService`, `queryHandler`.
+- Write docstrings for functions and describe API responses.
+- Keep Vercel AI SDK calls clean:
+
+- Avoid large JSON dumps in prompts; summarize them.
+
+- Follow functional component patterns in React.

@@ -1,0 +1,28 @@
+---
+description: NodeOps deployment guidance for this project
+globs: "nodeops_template.yaml, Dockerfile*"
+---
+
+# NodeOps Deployment Guidelines
+
+- Port 3000 for frontend, 5000 for backend (if applicable)
+- Define environment variables in `nodeops_template.yaml`
+  - `VERCEL_AI_KEY`
+  - `MCP_SERVER_URL`
+  - `DEFAULT_CHAIN`
+- Scaling:
+  ```yaml
+  scaling:
+    min_instances: 1
+    max_instances: 5
+    scale_metric: cpu_usage
+  ```
+- Container resources: start with 1 CPU and 2Gi memory.
+
+- Docker best practice:
+
+- Use node:20-alpine
+
+- Copy only necessary build artifacts.
+
+- Use npm run build && npm start

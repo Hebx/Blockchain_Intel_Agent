@@ -1,0 +1,11 @@
+---
+description: Meta rules for maintaining Cursor configuration across projects.
+alwaysApply: true
+---
+
+# 🧩 Cursor Meta Management
+
+- Treat `.cursor/rules` and `.cursor/commands` as **first-class code**.
+- Any update to rules or commands **must be committed** under `docs:` or `chore:` type.
+- When cloning a new project, copy the latest `.cursor/` folder as a template baseline.
+- After each major feature merge, run `/commit` to snapshot the rule evolution.

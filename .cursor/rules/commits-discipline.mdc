@@ -1,0 +1,57 @@
+---
+description: Enforce commit discipline and encourage frequent, atomic commits for all effective changes
+alwaysApply: true
+---
+
+# 🧠 Commit Discipline Rule
+
+Whenever meaningful code or config changes are made, **generate a clear and descriptive Git commit**.
+
+## Commit Guidelines
+
+1. **Commit scope:**
+
+   - Each commit should represent one logical unit of work (a small but complete milestone).
+   - Avoid bundling unrelated changes together.
+
+2. **Commit timing:**
+
+   - After implementing or refactoring a feature or integration step.
+   - After completing a PRD milestone (e.g., MCP connection working, AI agent responding, Docker container builds).
+   - Before switching context or starting new work.
+
+3. **Commit message format:**
+
+   - [type]: [short summary]
+
+   - [optional longer description — what changed, why, how tested]
+
+**Types include:**
+
+- `feat:` — New feature or capability
+- `fix:` — Bug fix or patch
+- `refactor:` — Internal improvement, cleanup, restructuring
+- `chore:` — Dependencies, build system, configs
+- `docs:` — Documentation, markdowns, PRD, rules updates
+- `test:` — Adding missing tests or correcting existing tests
+- `style:` — Formatting, missing semi colons, etc; no code change
+- `perf:` — Performance improvements
+- `ci:` — Continuous integration configuration changes
+- `revert:` — Reverts a previous commit
+
+4. **Frequency:**
+
+- Commit at least once per hour of productive work or per meaningful file group change.
+- Push frequently to keep remote progress visible.
+
+5. **Automatic prompts (optional):**
+
+- If Cursor detects more than ~50 changed lines since last commit, it should suggest:
+  > “Consider committing your progress now — describe your change in a clear, atomic message.”
+
+---
+
+## Command Integration
+
+You can use a Cursor **command** for this commit flow (see `commands.mdc` below).  
+It will summarize the diff and propose a Git commit message automatically.

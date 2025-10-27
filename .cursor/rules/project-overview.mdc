@@ -1,0 +1,25 @@
+---
+description: Core project overview and architectural context for the Web3 AI Agent Node
+alwaysApply: true
+---
+
+# Project Overview
+
+This project implements a **Web3 AI Agent Node** deployable via **NodeOps** using:
+
+- **Vercel AI SDK** for conversational reasoning
+- **Blockscout MCP Server** (`https://mcp.blockscout.com`) as the blockchain data layer
+- **Docker** for containerization and NodeOps deployment
+
+Guidelines:
+
+- The project’s purpose is to let users ask natural questions about blockchain activity and receive AI-interpreted results.
+- Always keep reasoning close to the PRD: conversational analysis of on-chain data.
+- Maintain hackathon-level simplicity: single repo, easy deployment, clear demo.
+
+Architecture reminder:
+[User Chat UI] ← Vercel AI SDK
+↓
+[Backend Server] → Blockscout MCP
+↓
+[Response] ← AI-reasoned blockchain insights

@@ -1,0 +1,25 @@
+---
+description: Rules and context for AI SDK + Blockscout MCP NodeOps project
+alwaysApply: true
+---
+
+# 🧠 Project Context
+
+- Primary spec: `docs/PRD.md`
+- Key references: `docs/REFERENCES.md`, `docs/API.md`
+- Use these to ground all planning, coding, and documentation tasks.
+
+When using `/plan` or `/build`, read and reference those docs to ensure alignment.
+
+# 🏗️ Architectural Goals
+
+- Backend: Vercel AI SDK + Blockscout MCP integration
+- Output: Dockerized NodeOps-ready deployment
+- Focus: clean abstractions, minimal latency, and composable agent reasoning.
+
+# ⚙️ Development Guidelines
+
+- Always check API schemas in `docs/API.md` before defining types.
+- Keep each module independent for easier Docker build and testing.
+- Reference PRD milestones when generating tasks.
+/

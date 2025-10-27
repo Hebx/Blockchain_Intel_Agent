@@ -1,0 +1,25 @@
+---
+description: Integration pattern for Blockscout MCP within the Web3 AI Agent Node
+globs: "backend/**/*.ts, lib/**/*.ts"
+---
+
+# Blockscout MCP Integration
+
+- Use `MCP_SERVER_URL=https://mcp.blockscout.com`
+- Query endpoints such as `/chains`, `/tokens`, `/transactions`, `/contracts`, `/accounts`
+- Always fetch through an async function (`fetchMCPData`) that handles:
+  - Timeouts
+  - HTTP errors
+  - JSON parsing
+- Keep responses minimal: only include necessary fields in prompts.
+- Example:
+  ```ts
+  export async function getAccountData(address: string) {
+    const res = await fetch(
+      `${process.env.MCP_SERVER_URL}/accounts/${address}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch account data");
+    return res.json();
+  }
+  ```
+- When passing data to the AI SDK, embed only contextual information, not raw full JSON.
