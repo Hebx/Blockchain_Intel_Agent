@@ -121,6 +121,47 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Get token metadata with caching
+   */
+  async getTokenInfo(
+    chainId: number = 1,
+    tokenAddress: string
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('token_info', chainId.toString(), tokenAddress);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTokenInfo(chainId, tokenAddress);
+      },
+      CACHE_TTL.TOKEN_HOLDERS,
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
+   * Get token holder concentration analysis with caching
+   */
+  async getTokenHolderConcentration(
+    chainId: number = 1,
+    tokenAddress: string,
+    topN: number = 10
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('token_concentration', chainId.toString(), `${tokenAddress}_${topN}`);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTokenHolderConcentration(chainId, tokenAddress, topN);
+      },
+      CACHE_TTL.TOKEN_HOLDERS,
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
    * Get address info with caching
    */
   async getAddressInfo(

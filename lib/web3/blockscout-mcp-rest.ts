@@ -144,6 +144,74 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Get token metadata and information
+   * GET /api/v2/tokens/{token_contract_address}
+   */
+  async getTokenInfo(
+    chainId: number,
+    tokenAddress: string
+  ): Promise<any> {
+    const data = await this.makeBlockscoutRequest(
+      chainId,
+      `/api/v2/tokens/${tokenAddress}`
+    );
+    return data;
+  }
+
+  /**
+   * Get token holder concentration (top holders with percentages)
+   * Calculates holder concentration metrics from token info and holders
+   */
+  async getTokenHolderConcentration(
+    chainId: number,
+    tokenAddress: string,
+    topN: number = 10
+  ): Promise<any> {
+    try {
+      const [tokenInfo, holders] = await Promise.all([
+        this.getTokenInfo(chainId, tokenAddress),
+        this.getTokenHolders(chainId, tokenAddress, topN),
+      ]);
+
+      const holderCounts = holders?.items || [];
+      const totalSupply = tokenInfo?.total_supply || '0';
+      
+      // Calculate concentration
+      let topHoldersPercent = 0;
+      let holderDistribution: Array<{ address: string; balance: string; percentage: number }> = [];
+      
+      if (holderCounts.length > 0) {
+        const totalSupplyBigInt = BigInt(totalSupply.toString());
+        
+        holderDistribution = holderCounts.map((holder: any) => {
+          const balance = BigInt(holder.value || 0);
+          const percentage = Number((balance * BigInt(10000)) / totalSupplyBigInt) / 100;
+          return {
+            address: holder.address?.hash || holder.address,
+            balance: holder.value || '0',
+            percentage,
+          };
+        });
+        
+        topHoldersPercent = holderDistribution.reduce((sum, holder) => sum + holder.percentage, 0);
+      }
+
+      return {
+        tokenInfo,
+        topHolders: holderDistribution,
+        concentrationMetrics: {
+          topNHoldersPercent: topHoldersPercent,
+          holderCount: holders?.items?.length || 0,
+          distributionSpread: topHoldersPercent < 20 ? 'Decentralized' : topHoldersPercent < 50 ? 'Moderate' : 'Concentrated',
+        },
+      };
+    } catch (error) {
+      console.error('Error calculating holder concentration:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get transaction information
    * GET /api/v2/transactions/{transaction_hash}
    */
