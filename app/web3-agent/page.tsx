@@ -16,8 +16,15 @@ import { ChevronLeft, Sparkles, TrendingUp, Wallet, Coins } from 'lucide-react';
 export default function Web3AgentPage() {
   const [chainId, setChainId] = useState(1);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Use ref to store current chainId for immediate access in transport
+  const chainIdRef = useRef(1);
   // Generate or retrieve conversation ID from session
   const conversationIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Sync chainId with ref whenever it changes
+    chainIdRef.current = chainId;
+  }, [chainId]);
 
   useEffect(() => {
     if (!conversationIdRef.current) {
@@ -34,25 +41,24 @@ export default function Web3AgentPage() {
   }, []);
 
   // Create custom transport that modifies the fetch to include chainId
+  // Use ref to get current chainId without memoization dependency
   const customTransport = useMemo(() => {
-    const originalFetch = globalThis.fetch;
-    
     return new DefaultChatTransport({ 
       api: '/api/web3-agent',
       fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
-        // If there's a body, parse it and add chainId
+        // If there's a body, parse it and add chainId from ref (always current)
         if (init?.body && typeof init.body === 'string') {
           try {
             const bodyData = JSON.parse(init.body);
-            init.body = JSON.stringify({ ...bodyData, chainId });
+            init.body = JSON.stringify({ ...bodyData, chainId: chainIdRef.current });
           } catch (e) {
             // If parsing fails, just use original body
           }
         }
-        return originalFetch(input, init);
+        return globalThis.fetch(input, init);
       }
     });
-  }, [chainId]);
+  }, []); // Empty deps - uses ref for current value
 
   const { messages, sendMessage, status, error, stop } = useChat({
     transport: customTransport,
@@ -65,7 +71,11 @@ export default function Web3AgentPage() {
       return;
     }
     
+    // Update both state and ref
     setChainId(submittedChainId);
+    chainIdRef.current = submittedChainId;
+    
+    // Send message immediately - transport will use the updated ref value
     sendMessage({ text });
   };
 
