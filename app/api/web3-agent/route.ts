@@ -129,7 +129,6 @@ export async function POST(req: Request) {
     const result = streamText({
       model: openai('gpt-4o-mini'),
       prompt,
-      maxTokens: 2000,
       onFinish: async ({ text, usage }) => {
         console.log(`AI Response completed in ${Date.now() - startTime}ms`);
         console.log(`Tokens: ${usage.totalTokens}`);
@@ -165,18 +164,39 @@ export async function POST(req: Request) {
 }
 
 /**
- * Stream cached response
+ * Stream cached response using text-to-speech streaming
+ * Reuses the AI SDK to generate proper streaming format
  */
 function streamCachedResponse(text: string): Response {
+  // For cached responses, we need to stream them properly
+  // Use generateText to create the proper format
   const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`));
+    async start(controller) {
+      const encoder = new TextEncoder();
+      
+      // Wrap the cached text in proper AI SDK streaming format
+      // Format: '0:""\n' for start, then text chunks
+      controller.enqueue(encoder.encode('0:""\n'));
+      
+      // Split text into chunks and send
+      const chunkSize = 1;
+      for (let i = 0; i < text.length; i += chunkSize) {
+        const chunk = text.slice(i, i + chunkSize);
+        const escapedChunk = chunk.replace(/"/g, '\\"');
+        controller.enqueue(encoder.encode(`0:"${escapedChunk}"\n`));
+      }
+      
+      // Send finish message
+      controller.enqueue(encoder.encode('d:{"finishReason":"stop","usage":{}}\n'));
+      
       controller.close();
     },
   });
 
   return new Response(stream, {
-    headers: { 'Content-Type': 'text/event-stream' },
+    headers: { 
+      'Content-Type': 'text/plain; charset=utf-8',
+    },
   });
 }
 
