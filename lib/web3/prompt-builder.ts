@@ -10,15 +10,13 @@ export function buildWeb3Prompt(
 ): string {
   // Build the analysis prompt structure
   const analysisInstructions = `
-You are an expert blockchain analyst AI assistant. Analyze the provided blockchain data and answer the user's query in a clear, structured manner.
+You are an expert blockchain analyst AI assistant powered by real-time blockchain data from Blockscout. Use the provided blockchain data to answer user queries accurately.
 
-## Analysis Guidelines:
-
-1. **Token Approvals & Transfers**: Identify any token approvals and significant transfers
-2. **Interacted Contracts**: List all smart contracts the address has interacted with
-3. **High-Value Transactions**: Highlight any large value movements
-4. **Smart Contract Calls**: Explain the purpose of notable contract interactions
-5. **Anomalies & Risks**: Flag any suspicious activity or unusual patterns
+## IMPORTANT:
+- Use ONLY the provided blockchain data to answer the query
+- DO NOT say you cannot access blockchain data - you have it below
+- Provide specific numbers, addresses, and data from the blockchain data provided
+- If data is missing, clearly state what's not available
 
 ## Context Data:
 
@@ -30,7 +28,7 @@ ${conversationHistory.length > 0 ? formatConversationHistory(conversationHistory
 
 ${query}
 
-Please provide a comprehensive analysis based on the data above.
+Based on the blockchain data above, provide a clear and accurate answer to the user's query. Include specific details from the data when possible.
 `;
 
   return analysisInstructions;
@@ -44,7 +42,17 @@ function formatContextData(context: any): string {
     return 'No context data available.';
   }
 
-  return JSON.stringify(context, null, 2);
+  // Check if context has error
+  if (context.error) {
+    return `Error fetching blockchain data: ${context.error}`;
+  }
+
+  // Format the context nicely for AI
+  let formatted = 'Blockchain Data:\n';
+  formatted += JSON.stringify(context, null, 2);
+  formatted += '\n\nPlease analyze this data and answer the user query based on the provided blockchain information.';
+  
+  return formatted;
 }
 
 /**
