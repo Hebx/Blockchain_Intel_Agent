@@ -47,10 +47,28 @@ function formatContextData(context: any): string {
     return `Error fetching blockchain data: ${context.error}. Please inform the user that data could not be retrieved.`;
   }
 
-  // Format the context nicely for AI
+  // Format the context nicely for AI with unit conversions
   let formatted = 'Blockchain Data:\n';
-  formatted += JSON.stringify(context, null, 2);
-  formatted += '\n\nPlease analyze this data and answer the user query based on the provided blockchain information.';
+  
+  // Format balance information properly
+  const formattedContext = { ...context };
+  if (context.coin_balance && typeof context.coin_balance === 'string') {
+    // Convert wei to ETH (divide by 10^18)
+    const wei = BigInt(context.coin_balance);
+    const eth = Number(wei) / 1e18;
+    const usdValue = eth * (parseFloat(context.exchange_rate) || 0);
+    formattedContext.balance_eth = eth.toFixed(6);
+    formattedContext.balance_usd = usdValue.toFixed(2);
+    formattedContext.balance_raw_wei = context.coin_balance;
+  }
+  
+  formatted += JSON.stringify(formattedContext, null, 2);
+  formatted += '\n\nIMPORTANT: When discussing balances:\n';
+  formatted += '- "balance_eth" is in ETH (readable format)\n';
+  formatted += '- "balance_usd" is the USD value\n';
+  formatted += '- "balance_raw_wei" is in wei (for reference only)\n';
+  formatted += '- Use the balance_eth value when presenting balances to users\n\n';
+  formatted += 'Please analyze this data and answer the user query based on the provided blockchain information.';
   
   return formatted;
 }
