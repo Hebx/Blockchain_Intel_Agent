@@ -14,7 +14,7 @@ import ErrorDisplay from '@/components/web3/ErrorDisplay';
 import { LoadingState } from '@/components/web3/LoadingStates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare } from 'lucide-react';
+import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare, Blocks, Activity, Zap } from 'lucide-react';
 import { chatRepository } from '@/lib/db/chat-repository';
 import type { ChatWithMetadata, MessageWithMetadata } from '@/lib/db/chat-repository';
 
@@ -312,30 +312,78 @@ export default function Web3AgentPage() {
                   Ask me anything about the blockchain. Try these queries:
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
                 <QueryCard
                   icon={<TrendingUp className="h-5 w-5" />}
                   title="Latest Block"
-                  description="Get the most recent block information"
-                  onClick={() => sendMessage({ text: "What's the latest block on Ethereum?" })}
+                  description="Get the most recent block"
+                  onClick={() => handleTemplateClick("What's the latest block on Ethereum?")}
                 />
                 <QueryCard
                   icon={<Coins className="h-5 w-5" />}
                   title="Token Holders"
-                  description="View top holders of any token"
-                  onClick={() => sendMessage({ text: 'Show me the top 10 holders of USDC' })}
+                  description="View top token holders"
+                  onClick={() => handleTemplateClick('Show me the top 10 holders of USDC')}
                 />
                 <QueryCard
                   icon={<Wallet className="h-5 w-5" />}
-                  title="Analyze Wallet"
-                  description="Deep dive into wallet activity"
-                  onClick={() => handleTemplateClick('Analyze wallet: [enter wallet address here]')}
+                  title="Full Account Analysis"
+                  description="Comprehensive wallet analysis"
+                  onClick={() => handleTemplateClick('Perform full account analysis on wallet: [enter address]')}
                 />
                 <QueryCard
                   icon={<Sparkles className="h-5 w-5" />}
-                  title="Token Analysis"
-                  description="Analyze any token's distribution"
-                  onClick={() => handleTemplateClick('Show top 10 holders of [enter token contract address]')}
+                  title="Token Concentration"
+                  description="Analyze token distribution"
+                  onClick={() => handleTemplateClick('Show token holder concentration for USDC')}
+                />
+                <QueryCard
+                  icon={<MessageSquare className="h-5 w-5" />}
+                  title="Transaction Analysis"
+                  description="Examine any transaction"
+                  onClick={() => handleTemplateClick('Analyze transaction: [enter transaction hash]')}
+                />
+                <QueryCard
+                  icon={<Zap className="h-5 w-5" />}
+                  title="Transaction Flow"
+                  description="Trace transaction flow"
+                  onClick={() => handleTemplateClick('Analyze transaction flow for: [enter transaction hash]')}
+                />
+                <QueryCard
+                  icon={<Blocks className="h-5 w-5" />}
+                  title="Block Information"
+                  description="Get block details"
+                  onClick={() => handleTemplateClick('What is in block number 19000000?')}
+                />
+                <QueryCard
+                  icon={<Coins className="h-5 w-5" />}
+                  title="NFT Holdings"
+                  description="Check NFT collections"
+                  onClick={() => handleTemplateClick('Show NFTs owned by [enter address]')}
+                />
+                <QueryCard
+                  icon={<Wallet className="h-5 w-5" />}
+                  title="Chain of Custody"
+                  description="Trace fund flows"
+                  onClick={() => handleTemplateClick('Trace chain of custody for wallet: [enter address]')}
+                />
+                <QueryCard
+                  icon={<Activity className="h-5 w-5" />}
+                  title="DeFi Analysis"
+                  description="Analyze DeFi positions"
+                  onClick={() => handleTemplateClick('Analyze DeFi activity for wallet: [enter address]')}
+                />
+                <QueryCard
+                  icon={<TrendingUp className="h-5 w-5" />}
+                  title="Token Transfers"
+                  description="View transfer history"
+                  onClick={() => handleTemplateClick('Show token transfers for [enter address]')}
+                />
+                <QueryCard
+                  icon={<Sparkles className="h-5 w-5" />}
+                  title="Network Status"
+                  description="Check chain health"
+                  onClick={() => handleTemplateClick('What is the current status of Ethereum?')}
                 />
               </div>
             </div>
