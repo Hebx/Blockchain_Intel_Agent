@@ -38,13 +38,13 @@ Based on the blockchain data above, provide a clear and accurate answer to the u
  * Format blockchain context data for prompt
  */
 function formatContextData(context: any): string {
-  if (!context) {
-    return 'No context data available.';
+  if (!context || Object.keys(context).length === 0) {
+    return 'No blockchain data available. Please inform the user that the data could not be fetched.';
   }
 
   // Check if context has error
   if (context.error) {
-    return `Error fetching blockchain data: ${context.error}`;
+    return `Error fetching blockchain data: ${context.error}. Please inform the user that data could not be retrieved.`;
   }
 
   // Format the context nicely for AI

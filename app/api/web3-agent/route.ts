@@ -111,7 +111,7 @@ export async function POST(req: Request) {
         }
       } catch (error) {
         console.error('Error fetching blockchain data:', error);
-        context = { error: 'Failed to fetch blockchain data', details: error };
+        context = { error: 'Failed to fetch blockchain data', details: error instanceof Error ? error.message : String(error) };
       }
     }
 
