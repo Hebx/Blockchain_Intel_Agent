@@ -79,20 +79,6 @@ export function parseWeb3Query(input: string): ParsedQuery {
   const lowerInput = input.toLowerCase();
   const trimmedInput = input.trim();
 
-  // Check if the entire query is just an Ethereum address
-  // This handles direct address queries like "0x1234..." or "analyze 0x1234"
-  const addressFromQuery = extractAddress(input);
-  if (addressFromQuery && (trimmedInput === addressFromQuery || trimmedInput.toLowerCase().includes(addressFromQuery.toLowerCase()))) {
-    return {
-      type: 'account_summary',
-      entities: {
-        address: addressFromQuery,
-        chain: extractChain(input),
-      },
-      raw: input,
-    };
-  }
-
   // Check for latest block queries
   if (
     /latest\s+(ethereum\s+)?block|current\s+block|newest\s+block|last\s+(ethereum\s+)?block|block\s+number/i.test(input)
@@ -139,7 +125,7 @@ export function parseWeb3Query(input: string): ParsedQuery {
   }
 
   // Check for NFT queries (must come before account_summary to avoid false matches)
-  if (/nft|collection|crypto.*punks|bored.*ape|pixel/i.test(lowerInput)) {
+  if (/nft|collection|crypto.*punks|bored.*ape|pixel|non.fungible/i.test(lowerInput)) {
     const address = extractAddress(input);
     return {
       type: 'nft_holdings',
@@ -275,6 +261,23 @@ export function parseWeb3Query(input: string): ParsedQuery {
       },
       raw: input,
     };
+  }
+
+  // Check if the query is just an Ethereum address (fallback for simple address queries)
+  const addressFromQuery = extractAddress(input);
+  if (addressFromQuery && trimmedInput.length < 100) {
+    // If the query is mostly just the address, treat as account summary
+    const wordsWithoutAddress = trimmedInput.replace(addressFromQuery, '').trim().split(/\s+/).filter(w => w.length > 0);
+    if (wordsWithoutAddress.length <= 2) {
+      return {
+        type: 'account_summary',
+        entities: {
+          address: addressFromQuery,
+          chain: extractChain(input),
+        },
+        raw: input,
+      };
+    }
   }
 
   // Unknown query type
