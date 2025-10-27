@@ -20,7 +20,13 @@ export async function POST(req: Request) {
   try {
     // 1. Extract request data
     const { messages, conversationId } = await req.json();
-    const query = messages[messages.length - 1]?.content || '';
+    console.log('Received messages:', JSON.stringify(messages, null, 2));
+    
+    // Extract query - handle both { content: string } and { text: string } formats
+    const lastMessage = messages[messages.length - 1];
+    const query = lastMessage?.content || lastMessage?.text || '';
+    
+    console.log('Extracted query:', query);
 
     // 2. Rate limiting (10 requests per second)
     const rateLimiter = getRateLimiter();
