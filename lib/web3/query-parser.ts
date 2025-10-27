@@ -13,6 +13,7 @@ export interface ParsedQuery {
     txHash?: string;
     block?: string;
     ensName?: string;
+    resolvedAddress?: string; // ENS resolved to address
     timeRange?: string;
     multipleAddresses?: string[];
   };
@@ -46,6 +47,25 @@ function extractAddress(text: string): string | undefined {
   const addressRegex = /0x[a-fA-F0-9]{40}/g;
   const match = text.match(addressRegex);
   return match ? match[0] : undefined;
+}
+
+/**
+ * Extract ENS name from text
+ */
+function extractENSName(text: string): string | undefined {
+  // ENS names: alphanumeric, hyphens, dots, ending with .eth
+  const ensRegex = /([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.eth)\b/gi;
+  const match = text.match(ensRegex);
+  return match ? match[0] : undefined;
+}
+
+/**
+ * Validate Ethereum address checksum
+ */
+function isValidAddress(address: string): boolean {
+  if (!address.startsWith('0x')) return false;
+  if (address.length !== 42) return false;
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
 }
 
 /**
