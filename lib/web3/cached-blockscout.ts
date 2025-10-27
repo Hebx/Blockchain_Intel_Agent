@@ -1,102 +1,111 @@
-import { BlockscoutMcpClient } from './blockscout-mcp';
+import { BlockscoutRestClient } from './blockscout-mcp-rest';
 import { getCacheManager } from '@/lib/cache/cache-manager';
 import { CACHE_TTL, generateMCPCacheKey } from '@/lib/cache/ttl-config';
 import type { CacheManager } from '@/lib/cache/cache-manager';
 
 /**
- * Cached wrapper for Blockscout MCP client
+ * Cached wrapper for Blockscout MCP REST API client
  * Implements cache-first pattern to reduce API calls
  */
 export class CachedBlockscoutClient {
-  private client: BlockscoutMcpClient;
+  private client: BlockscoutRestClient;
   private cache: CacheManager;
 
-  constructor(options: { mcpServerUrl: string }) {
-    this.client = new BlockscoutMcpClient(options);
+  constructor(options?: { baseUrl?: string }) {
+    this.client = new BlockscoutRestClient(options);
     this.cache = getCacheManager();
   }
 
   /**
    * Get latest block with caching
    */
-  async getLatestBlock(chain: string = 'ethereum'): Promise<any> {
-    const cacheKey = generateMCPCacheKey('latest_block', chain, 'latest');
+  async getLatestBlock(chainId: number = 1): Promise<any> {
+    const cacheKey = generateMCPCacheKey('latest_block', chainId.toString(), 'latest');
 
     return await this.cache.getOrSet(
       cacheKey,
       async () => {
-        return await this.client.getLatestBlock(chain);
+        return await this.client.getLatestBlock(chainId);
       },
       CACHE_TTL.LATEST_BLOCK,
     );
   }
 
   /**
-   * Get token holders with caching
+   * Get tokens by address with caching (replaces token holders)
    */
-  async getTokenHolders(
+  async getTokensByAddress(
+    chainId: number = 1,
     address: string,
-    limit: number = 10,
-    chain: string = 'ethereum',
+    cursor?: string,
   ): Promise<any> {
-    const cacheKey = generateMCPCacheKey('token_holders', chain, `${address}:${limit}`);
+    const cacheKey = generateMCPCacheKey('tokens_by_address', chainId.toString(), `${address}${cursor || ''}`);
 
     return await this.cache.getOrSet(
       cacheKey,
       async () => {
-        return await this.client.getTokenHolders(address, limit, chain);
+        return await this.client.getTokensByAddress(chainId, address, cursor);
       },
       CACHE_TTL.TOKEN_HOLDERS,
     );
   }
 
   /**
-   * Get account summary with caching
+   * Get address info with caching
    */
-  async getAccountSummary(
+  async getAddressInfo(
+    chainId: number = 1,
     address: string,
-    chain: string = 'ethereum',
   ): Promise<any> {
-    const cacheKey = generateMCPCacheKey('account_summary', chain, address);
+    const cacheKey = generateMCPCacheKey('address_info', chainId.toString(), address);
 
     return await this.cache.getOrSet(
       cacheKey,
       async () => {
-        return await this.client.getAccountSummary(address, chain);
+        return await this.client.getAddressInfo(chainId, address);
       },
       CACHE_TTL.ACCOUNT_SUMMARY,
     );
   }
 
   /**
-   * Get contract events with caching
+   * Get transactions by address with caching
    */
-  async getContractEvents(
-    contract: string,
-    limit: number = 20,
-    chain: string = 'ethereum',
+  async getTransactionsByAddress(
+    chainId: number = 1,
+    address: string,
+    ageFrom?: string,
+    ageTo?: string,
+    methods?: string[],
   ): Promise<any> {
-    const cacheKey = generateMCPCacheKey('contract_events', chain, `${contract}:${limit}`);
+    const params = `${address}${ageFrom || ''}${ageTo || ''}${methods?.join(',') || ''}`;
+    const cacheKey = generateMCPCacheKey('transactions_by_address', chainId.toString(), params);
 
     return await this.cache.getOrSet(
       cacheKey,
       async () => {
-        return await this.client.getContractEvents(contract, limit, chain);
+        return await this.client.getTransactionsByAddress(chainId, address, ageFrom, ageTo, methods);
       },
       CACHE_TTL.CONTRACT_EVENTS,
     );
   }
 
   /**
-   * Get chain health with caching
+   * Get chain health with caching (using latest block as health indicator)
    */
-  async getChainHealth(chain: string = 'ethereum'): Promise<any> {
-    const cacheKey = generateMCPCacheKey('chain_status', chain, 'health');
+  async getChainHealth(chainId: number = 1): Promise<any> {
+    const cacheKey = generateMCPCacheKey('chain_status', chainId.toString(), 'health');
 
     return await this.cache.getOrSet(
       cacheKey,
       async () => {
-        return await this.client.getChainHealth(chain);
+        const latestBlock = await this.client.getLatestBlock(chainId);
+        return {
+          chainId,
+          latestBlock: latestBlock?.number || 'unknown',
+          timestamp: latestBlock?.timestamp || null,
+          health: 'operational',
+        };
       },
       CACHE_TTL.CHAIN_STATUS,
     );
@@ -145,10 +154,7 @@ let cachedClientInstance: CachedBlockscoutClient | null = null;
  */
 export function getCachedBlockscoutClient(): CachedBlockscoutClient {
   if (!cachedClientInstance) {
-    const blockscoutUrl = process.env.BLOCKSCOUT_MCP_URL || 'https://mcp.blockscout.com';
-    cachedClientInstance = new CachedBlockscoutClient({
-      mcpServerUrl: blockscoutUrl,
-    });
+    cachedClientInstance = new CachedBlockscoutClient();
   }
   return cachedClientInstance;
 }

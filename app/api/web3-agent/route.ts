@@ -65,38 +65,39 @@ export async function POST(req: Request) {
 
     if (parsedQuery.type !== 'unknown') {
       try {
+        // Map chain name to chain ID (Ethereum = 1)
+        const chainIdMap: Record<string, number> = {
+          ethereum: 1,
+          base: 8453,
+          optimism: 10,
+          polygon: 137,
+          arbitrum: 42161,
+        };
+        const chainId = chainIdMap[parsedQuery.entities.chain?.toLowerCase() || 'ethereum'] || 1;
+
         switch (parsedQuery.type) {
           case 'latest_block':
-            context = await cachedClient.getLatestBlock(parsedQuery.entities.chain || 'ethereum');
+            context = await cachedClient.getLatestBlock(chainId);
             break;
           case 'token_holders':
             if (parsedQuery.entities.token) {
-              context = await cachedClient.getTokenHolders(
-                parsedQuery.entities.token,
-                parsedQuery.entities.limit || 10,
-                parsedQuery.entities.chain || 'ethereum'
-              );
-            }
-            break;
-          case 'contract_events':
-            if (parsedQuery.entities.contract) {
-              context = await cachedClient.getContractEvents(
-                parsedQuery.entities.contract,
-                parsedQuery.entities.limit || 20,
-                parsedQuery.entities.chain || 'ethereum'
-              );
+              // Use getTokensByAddress for token holders info
+              context = await cachedClient.getTokensByAddress(chainId, parsedQuery.entities.token);
             }
             break;
           case 'account_summary':
             if (parsedQuery.entities.address) {
-              context = await cachedClient.getAccountSummary(
-                parsedQuery.entities.address,
-                parsedQuery.entities.chain || 'ethereum'
-              );
+              context = await cachedClient.getAddressInfo(chainId, parsedQuery.entities.address);
+            }
+            break;
+          case 'contract_events':
+            if (parsedQuery.entities.address) {
+              // Use getTransactionsByAddress for contract interactions
+              context = await cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address);
             }
             break;
           case 'chain_status':
-            context = await cachedClient.getChainHealth(parsedQuery.entities.chain || 'ethereum');
+            context = await cachedClient.getChainHealth(chainId);
             break;
         }
       } catch (error) {
