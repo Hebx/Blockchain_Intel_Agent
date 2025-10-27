@@ -62,6 +62,23 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Lookup token address by symbol
+   */
+  async lookupTokenBySymbol(chainId: number = 1, symbol: string): Promise<string | null> {
+    const cacheKey = generateMCPCacheKey('token_lookup', chainId.toString(), symbol.toUpperCase());
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.lookupTokenBySymbol(chainId, symbol);
+      },
+      CACHE_TTL.TOKEN_HOLDERS,
+    );
+
+    return result;
+  }
+
+  /**
    * Get tokens by address with caching (replaces token holders)
    */
   async getTokensByAddress(

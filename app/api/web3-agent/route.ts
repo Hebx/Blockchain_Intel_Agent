@@ -92,9 +92,26 @@ export async function POST(req: Request) {
             context = await cachedClient.getLatestBlock(chainId);
             break;
           case 'token_holders':
-            if (parsedQuery.entities.token) {
-              // Use getTokensByAddress for token holders info
-              context = await cachedClient.getTokensByAddress(chainId, parsedQuery.entities.token);
+            // Try to resolve token symbol to address
+            let tokenAddress = parsedQuery.entities.token;
+            
+            // If no token is specified, check if we can derive from the query
+            if (!tokenAddress && query.includes('USDC')) {
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDC');
+            } else if (!tokenAddress && query.includes('USDT')) {
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDT');
+            } else if (!tokenAddress && query.includes('DAI')) {
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'DAI');
+            } else if (tokenAddress && !tokenAddress.startsWith('0x')) {
+              // Looks like a symbol, try to look it up
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, tokenAddress);
+            }
+            
+            if (tokenAddress) {
+              console.log('Looking up token holders for:', tokenAddress);
+              context = await cachedClient.getTokensByAddress(chainId, tokenAddress);
+            } else {
+              context = { error: 'Token address could not be determined from query' };
             }
             break;
           case 'account_summary':
