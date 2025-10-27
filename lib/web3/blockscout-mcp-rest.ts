@@ -170,11 +170,17 @@ export class BlockscoutRestClient {
     address: string,
     pageSize: number = 50
   ): Promise<any> {
-    const data = await this.makeBlockscoutRequest(
-      chainId,
-      `/api/v2/addresses/${address}/token-transfers?page_size=${pageSize}`
-    );
-    return data;
+    try {
+      const data = await this.makeBlockscoutRequest(
+        chainId,
+        `/api/v2/addresses/${address}/token-transfers?page_size=${pageSize}`
+      );
+      console.log(`Token transfers response for ${address}:`, JSON.stringify(data).substring(0, 300));
+      return data;
+    } catch (error) {
+      console.error(`Error fetching token transfers for ${address}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -186,11 +192,17 @@ export class BlockscoutRestClient {
     address: string,
     pageSize: number = 50
   ): Promise<any> {
-    const data = await this.makeBlockscoutRequest(
-      chainId,
-      `/api/v2/addresses/${address}/nfts?page_size=${pageSize}`
-    );
-    return data;
+    try {
+      const data = await this.makeBlockscoutRequest(
+        chainId,
+        `/api/v2/addresses/${address}/nfts?page_size=${pageSize}`
+      );
+      console.log(`NFT response for ${address}:`, JSON.stringify(data).substring(0, 300));
+      return data;
+    } catch (error) {
+      console.error(`Error fetching NFTs for ${address}:`, error);
+      throw error;
+    }
   }
 
   /**
