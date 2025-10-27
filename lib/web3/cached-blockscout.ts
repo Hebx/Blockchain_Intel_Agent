@@ -100,6 +100,27 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Get token holders for a specific token with caching
+   */
+  async getTokenHolders(
+    chainId: number = 1,
+    tokenAddress: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('token_holders', chainId.toString(), tokenAddress);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTokenHolders(chainId, tokenAddress, pageSize);
+      },
+      CACHE_TTL.TOKEN_HOLDERS,
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
    * Get address info with caching
    */
   async getAddressInfo(

@@ -109,7 +109,8 @@ export async function POST(req: Request) {
             
             if (tokenAddress) {
               console.log('Looking up token holders for:', tokenAddress);
-              context = await cachedClient.getTokensByAddress(chainId, tokenAddress);
+              const limit = parsedQuery.entities.limit || 10;
+              context = await cachedClient.getTokenHolders(chainId, tokenAddress, limit);
             } else {
               context = { error: 'Token address could not be determined from query' };
             }

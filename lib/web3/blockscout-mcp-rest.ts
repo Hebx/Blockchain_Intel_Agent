@@ -128,6 +128,22 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Get token holders for a specific token contract address
+   * GET /api/v2/tokens/{token_contract_address}/holders
+   */
+  async getTokenHolders(
+    chainId: number,
+    tokenAddress: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const data = await this.makeBlockscoutRequest(
+      chainId, 
+      `/api/v2/tokens/${tokenAddress}/holders?page_size=${pageSize}`
+    );
+    return data;
+  }
+
+  /**
    * Lookup token by symbol
    */
   async lookupTokenBySymbol(chainId: number, symbol: string): Promise<any> {
