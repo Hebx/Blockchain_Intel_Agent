@@ -156,6 +156,28 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Fallback: If input is just a chain name or short chain reference, treat as chain status
+  // This handles queries like "ethereum", "base mainnet", "optimism", etc.
+  const chainName = extractChain(input);
+  const wordCount = trimmedInput.split(/\s+/).length;
+  
+  // Known chain names and aliases
+  const knownChains = ['ethereum', 'eth', 'base', 'optimism', 'op', 'polygon', 'arbitrum'];
+  const isChainReference = knownChains.some(chain => 
+    lowerInput.includes(chain.toLowerCase())
+  );
+  
+  // If it's a short query (1-3 words) that references a chain, treat as chain status
+  if (isChainReference && wordCount <= 3) {
+    return {
+      type: 'chain_status',
+      entities: {
+        chain: chainName,
+      },
+      raw: input,
+    };
+  }
+
   // Unknown query type
   return {
     type: 'unknown',
