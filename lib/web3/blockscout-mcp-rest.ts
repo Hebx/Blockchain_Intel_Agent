@@ -262,9 +262,10 @@ export class BlockscoutRestClient {
     pageSize: number = 50
   ): Promise<any> {
     try {
+      // Note: The Blockscout API doesn't accept page_size parameter for NFT collections
       const data = await this.makeBlockscoutRequest(
         chainId,
-        `/api/v2/addresses/${address}/nft/collections?type=ERC-721,ERC-404,ERC-1155&page_size=${pageSize}`
+        `/api/v2/addresses/${address}/nft/collections?type=ERC-721,ERC-404,ERC-1155`
       );
       console.log(`NFT response for ${address}:`, JSON.stringify(data).substring(0, 300));
       return data;
