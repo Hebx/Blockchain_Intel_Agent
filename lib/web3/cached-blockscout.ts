@@ -141,6 +141,68 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Get transaction info with caching
+   */
+  async getTransactionInfo(
+    chainId: number = 1,
+    txHash: string,
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('transaction_info', chainId.toString(), txHash);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTransactionInfo(chainId, txHash);
+      },
+      CACHE_TTL.CONTRACT_EVENTS, // Similar TTL as events
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
+   * Get token transfers by address with caching
+   */
+  async getTokenTransfers(
+    chainId: number = 1,
+    address: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('token_transfers', chainId.toString(), address);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTokenTransfers(chainId, address, pageSize);
+      },
+      CACHE_TTL.TOKEN_HOLDERS, // Similar to token holders
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
+   * Get NFT tokens by address with caching
+   */
+  async getNFTTokens(
+    chainId: number = 1,
+    address: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('nft_tokens', chainId.toString(), address);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getNFTTokens(chainId, address, pageSize);
+      },
+      CACHE_TTL.ACCOUNT_SUMMARY, // Similar to account summary
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
    * Get transactions by address with caching
    */
   async getTransactionsByAddress(

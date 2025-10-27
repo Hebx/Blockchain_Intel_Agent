@@ -27,6 +27,7 @@ DEFAULT_CHAIN=ethereum
 ### Upstash Redis (Production - Optional for Development)
 
 For production deployments, set up Upstash Redis:
+
 1. Create an account at [Upstash Console](https://console.upstash.com/)
 2. Create a new Redis database
 3. Copy the REST URL and Token
@@ -47,11 +48,13 @@ NODE_ENV=development  # or production
 ## Quick Start
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.local.example .env.local
    ```
 
 2. Update `.env.local` with your credentials:
+
    ```bash
    OPENAI_API_KEY=sk-proj-...
    ```
@@ -65,11 +68,13 @@ NODE_ENV=development  # or production
 ## Development vs Production
 
 ### Development
+
 - Uses in-memory cache (no Redis needed)
 - Good for local testing
 - Cache resets on server restart
 
 ### Production
+
 - Requires Upstash Redis for persistent caching
 - Cache survives container restarts
 - Better performance and rate limiting
@@ -77,11 +82,13 @@ NODE_ENV=development  # or production
 ## Verifying Setup
 
 Start the development server:
+
 ```bash
 npm run dev
 ```
 
 You should see:
+
 - ✅ "Redis credentials not found. Using in-memory cache for development." (development)
 - OR no warning if Redis credentials are set (production)
 
@@ -91,4 +98,3 @@ You should see:
 - `.env.local` is already in `.gitignore`
 - Use environment variables in NodeOps deployment
 - Store production credentials securely (e.g., NodeOps secrets management)
-

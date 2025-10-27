@@ -144,6 +144,47 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Get transaction information
+   * GET /api/v2/transactions/{transaction_hash}
+   */
+  async getTransactionInfo(chainId: number, txHash: string): Promise<any> {
+    const data = await this.makeBlockscoutRequest(chainId, `/api/v2/transactions/${txHash}`);
+    return data;
+  }
+
+  /**
+   * Get token transfers by address
+   * GET /api/v2/addresses/{address}/token-transfers
+   */
+  async getTokenTransfers(
+    chainId: number,
+    address: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const data = await this.makeBlockscoutRequest(
+      chainId,
+      `/api/v2/addresses/${address}/token-transfers?page_size=${pageSize}`
+    );
+    return data;
+  }
+
+  /**
+   * Get NFT tokens by address
+   * GET /api/v2/addresses/{address}/nfts
+   */
+  async getNFTTokens(
+    chainId: number,
+    address: string,
+    pageSize: number = 50
+  ): Promise<any> {
+    const data = await this.makeBlockscoutRequest(
+      chainId,
+      `/api/v2/addresses/${address}/nfts?page_size=${pageSize}`
+    );
+    return data;
+  }
+
+  /**
    * Lookup token by symbol
    */
   async lookupTokenBySymbol(chainId: number, symbol: string): Promise<any> {

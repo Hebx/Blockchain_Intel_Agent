@@ -1,9 +1,11 @@
 # Blockscout Query Enhancements
 
 ## Overview
+
 Based on the Blockscout MCP Server documentation and API capabilities, here are additional query types we can add to the Web3 AI Agent.
 
 ## Currently Implemented Query Types
+
 1. ✅ **latest_block** - Get latest block information
 2. ✅ **token_holders** - Get top holders of a specific token
 3. ✅ **contract_events** - Get contract events/interactions
@@ -13,17 +15,21 @@ Based on the Blockscout MCP Server documentation and API capabilities, here are 
 ## Proposed Additional Query Types
 
 ### 1. Transaction Information Queries
+
 **Query Types:**
+
 - `transaction_info` - Detailed transaction data
 - `transaction_summary` - Human-readable transaction summary
 - `transaction_logs` - Event logs with decoded data
 
 **Example Queries:**
+
 - "What happened in transaction 0xabc..."
 - "Explain transaction 0xabc... in plain English"
 - "Show me the events/logs from transaction 0xabc..."
 
 **API Endpoints:**
+
 ```typescript
 // In BlockscoutRestClient
 async getTransactionInfo(chainId: number, txHash: string): Promise<any>
@@ -34,14 +40,17 @@ async getTransactionLogs(chainId: number, txHash: string): Promise<any>
 ---
 
 ### 2. Token Transfer Queries
+
 **Query Type:** `token_transfers`
 
 **Example Queries:**
+
 - "Show me USDC transfers for 0xabc..." in the last 7 days
 - "What DAI transfers has address 0x... made?"
 - "List all token transfers for this address since January"
 
 **API Endpoint:**
+
 ```typescript
 async getTokenTransfers(
   chainId: number,
@@ -55,14 +64,17 @@ async getTokenTransfers(
 ---
 
 ### 3. NFT Queries
+
 **Query Type:** `nft_holdings`
 
 **Example Queries:**
+
 - "What NFTs does wallet 0xabc... own?"
 - "Show me the NFT collection holdings for this address"
 - "List all NFTs owned by 0x..."
 
 **API Endpoint:**
+
 ```typescript
 async getNFTTokens(chainId: number, address: string): Promise<any>
 ```
@@ -70,14 +82,17 @@ async getNFTTokens(chainId: number, address: string): Promise<any>
 ---
 
 ### 4. Block Information Queries
+
 **Query Type:** `block_info`
 
 **Example Queries:**
+
 - "What's in block 19000000?"
 - "Show me details for block 0xabc..."
 - "Get block information for block number 12345"
 
 **API Endpoint:**
+
 ```typescript
 async getBlockInfo(
   chainId: number,
@@ -89,15 +104,18 @@ async getBlockInfo(
 ---
 
 ### 5. Smart Contract Queries
+
 **Query Type:** `contract_interaction`
 
 **Example Queries:**
+
 - "What functions can I call on contract 0xabc..."
 - "Show me the ABI for contract 0x..."
 - "Get the verified source code for 0x..."
 - "Call balanceOf function on USDC contract for address 0x..."
 
 **API Endpoints:**
+
 ```typescript
 async getContractABI(chainId: number, address: string): Promise<any>
 async getContractSourceCode(chainId: number, address: string, fileName?: string): Promise<any>
@@ -113,14 +131,17 @@ async readContract(
 ---
 
 ### 6. ENS Resolution Queries
+
 **Query Type:** `ens_lookup`
 
 **Example Queries:**
+
 - "What's the address for vitalik.eth?"
 - "Resolve ens domain example.eth"
 - "Convert ethereum.eth to address"
 
 **API Endpoint:**
+
 ```typescript
 async resolveENS(name: string): Promise<string>
 ```
@@ -128,14 +149,17 @@ async resolveENS(name: string): Promise<string>
 ---
 
 ### 7. Token Information Queries
+
 **Query Type:** `token_info`
 
 **Example Queries:**
+
 - "Tell me about USDC token"
 - "What's the total supply of DAI?"
 - "Get information about WETH token"
 
 **Already partially implemented** via `lookupTokenBySymbol`, but could add:
+
 ```typescript
 async getTokenInfo(chainId: number, tokenAddress: string): Promise<any>
 ```
@@ -145,16 +169,19 @@ async getTokenInfo(chainId: number, tokenAddress: string): Promise<any>
 ## Implementation Priority
 
 ### High Priority (High Impact, Easy to Implement)
+
 1. ✅ **transaction_info** - Users frequently ask about specific transactions
 2. ✅ **token_transfers** - Common query for transaction history
 3. ✅ **nft_holdings** - Growing NFT market interest
 
 ### Medium Priority (Good Value)
+
 4. **block_info** - Useful for developers
 5. **transaction_summary** - Better UX than raw transaction data
 6. **contract_abi** - Developer-friendly feature
 
 ### Low Priority (Nice to Have)
+
 7. **ens_lookup** - Niche but useful
 8. **read_contract** - Advanced feature
 9. **contract_source** - Advanced developer feature

@@ -18,13 +18,14 @@ Ask natural language questions about blockchain data and get AI-reasoned insight
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - [OpenAI API Key](https://platform.openai.com/api-keys)
 - (Optional) [Upstash Redis](https://console.upstash.com/) for production caching
 
 ### Installation
 
 1. Clone and install dependencies:
+
 ```bash
 git clone <repository-url>
 cd nodeops-web3-agent-node
@@ -32,12 +33,14 @@ pnpm install
 ```
 
 2. Set up environment variables:
+
 ```bash
 # Create .env.local file
 cp .env.local.example .env.local
 ```
 
 Edit `.env.local` and add your credentials:
+
 ```bash
 OPENAI_API_KEY=sk-proj-your-key-here
 
@@ -47,6 +50,7 @@ UPSTASH_REDIS_REST_TOKEN=...
 ```
 
 3. Run the development server:
+
 ```bash
 pnpm dev
 ```
@@ -106,11 +110,13 @@ pnpm docker:down      # Stop containers
 ### Deploy with NodeOps
 
 1. Build the Docker image:
+
 ```bash
 pnpm docker:build
 ```
 
 2. Deploy using the NodeOps template:
+
 ```bash
 pnpm deploy
 ```
@@ -167,6 +173,7 @@ See [Cache Configuration](./docs/PROJECT_PLAN_REVISED.md#cache-strategy-details)
 ## 🧪 Testing
 
 Run test queries:
+
 ```bash
 npm run test-demo-queries
 ```
@@ -200,6 +207,7 @@ MIT License - see LICENSE file for details.
 ## ❓ Support
 
 For issues or questions:
+
 - Check [docs](./docs/) directory
 - Review [Project Plan](./docs/PROJECT_PLAN_REVISED.md)
 - Open an issue on GitHub

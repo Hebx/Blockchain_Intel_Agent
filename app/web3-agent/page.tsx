@@ -4,9 +4,14 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import ChatInput from '@/components/chat-input';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import ChainBadge from '@/components/web3/ChainBadge';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Sparkles, TrendingUp, Wallet, Coins } from 'lucide-react';
 
 export default function Web3AgentPage() {
   const [chainId, setChainId] = useState(1);
@@ -76,16 +81,22 @@ export default function Web3AgentPage() {
     <div className="flex flex-col h-screen">
       {/* Header */}
       <header className="border-b p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <Link href="/">
-            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">🌐 Web3 Intelligence Agent</h1>
-            <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link href="/">
+              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-2xl font-bold flex items-center gap-2">
+                <Sparkles className="h-6 w-6" />
+                Web3 Intelligence Agent
+              </h1>
+              <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+            </div>
           </div>
+          <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
         </div>
       </header>
 
@@ -94,25 +105,35 @@ export default function Web3AgentPage() {
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-12">
-              <h2 className="text-xl font-semibold mb-4">Welcome to Web3 Agent!</h2>
-              <p className="text-gray-600 mb-6">
-                Ask me anything about the blockchain. Try these queries:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-                <QuerySuggestion
-                  text="What's the latest block on Ethereum?"
+              <div className="mb-8">
+                <h2 className="text-2xl font-bold mb-2">Welcome to Web3 Agent!</h2>
+                <p className="text-gray-600">
+                  Ask me anything about the blockchain. Try these queries:
+                </p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl mx-auto">
+                <QueryCard
+                  icon={<TrendingUp className="h-5 w-5" />}
+                  title="Latest Block"
+                  description="Get the most recent block information"
                   onClick={() => sendMessage({ text: "What's the latest block on Ethereum?" })}
                 />
-                <QuerySuggestion
-                  text="Show me top USDC holders"
+                <QueryCard
+                  icon={<Coins className="h-5 w-5" />}
+                  title="Token Holders"
+                  description="View top holders of any token"
                   onClick={() => sendMessage({ text: 'Show me the top 10 holders of USDC' })}
                 />
-                <QuerySuggestion
-                  text="Analyze this wallet"
+                <QueryCard
+                  icon={<Wallet className="h-5 w-5" />}
+                  title="Analyze Wallet"
+                  description="Deep dive into wallet activity"
                   onClick={() => handleTemplateClick('Analyze wallet: [enter wallet address here]')}
                 />
-                <QuerySuggestion
-                  text="Show top holders of token"
+                <QueryCard
+                  icon={<Sparkles className="h-5 w-5" />}
+                  title="Token Analysis"
+                  description="Analyze any token's distribution"
                   onClick={() => handleTemplateClick('Show top 10 holders of [enter token contract address]')}
                 />
               </div>
@@ -124,43 +145,59 @@ export default function Web3AgentPage() {
               key={message.id}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`max-w-3xl rounded-lg p-4 ${
+              <Card
+                className={`max-w-3xl ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border shadow-sm'
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-semibold">
-                    {message.role === 'user' ? '👤 You' : '🤖 AI'}
-                  </span>
-                </div>
-                <div className="whitespace-pre-wrap">
-                  {message.parts.map((part: any, idx: number) => 
-                    part.type === 'text' ? part.text : null
-                  )}
-                </div>
-              </div>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={message.role === 'user' ? 'secondary' : 'default'} className={message.role === 'user' ? 'bg-blue-700' : ''}>
+                        {message.role === 'user' ? '👤 You' : '🤖 AI'}
+                      </Badge>
+                      {message.role === 'user' && (
+                        <ChainBadge chainId={chainId} className="text-xs bg-white/10 text-white border-white/20" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="whitespace-pre-wrap">
+                    {message.parts.map((part: any, idx: number) => 
+                      part.type === 'text' ? part.text : null
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           ))}
 
           {status === 'streaming' && (
             <div className="flex justify-start">
-              <div className="bg-gray-200 rounded-lg p-4 animate-pulse">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold">🤖 AI</span>
-                </div>
-                <div className="h-4 bg-gray-300 rounded w-32 mt-2"></div>
-              </div>
+              <Card className="max-w-3xl bg-white">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="default">🤖 AI</Badge>
+                    <span className="text-xs text-gray-500">Thinking...</span>
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-5/6" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 font-semibold">Error:</p>
-              <p className="text-red-600 text-sm">{error.message}</p>
-            </div>
+            <Alert variant="destructive">
+              <AlertDescription>
+                <p className="font-semibold mb-1">Error occurred</p>
+                <p className="text-sm">{error.message}</p>
+              </AlertDescription>
+            </Alert>
           )}
         </div>
       </div>
@@ -181,23 +218,36 @@ export default function Web3AgentPage() {
 }
 
 /**
- * Query suggestion button component
+ * Query card component with icon and description
  */
-function QuerySuggestion({
-  text,
+function QueryCard({
+  icon,
+  title,
+  description,
   onClick,
 }: {
-  text: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
   onClick: () => void;
 }) {
   return (
-    <Button
-      variant="outline"
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-all hover:border-blue-400 hover:scale-105"
       onClick={onClick}
-      className="text-left p-4 h-auto hover:bg-blue-50 hover:border-blue-300 transition-colors"
     >
-      <p className="text-sm font-medium text-gray-800">{text}</p>
-    </Button>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+            {icon}
+          </div>
+          <div className="flex-1 text-left">
+            <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
+            <p className="text-sm text-gray-600">{description}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

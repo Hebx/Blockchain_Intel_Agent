@@ -10,6 +10,10 @@ export interface ParsedQuery {
     token?: string;
     chain?: string;
     limit?: number;
+    txHash?: string;
+    block?: string;
+    ensName?: string;
+    timeRange?: string;
   };
   raw: string;
 }
@@ -20,6 +24,12 @@ export type QueryType =
   | 'contract_events'
   | 'account_summary'
   | 'chain_status'
+  | 'transaction_info'
+  | 'transaction_summary'
+  | 'transaction_logs'
+  | 'token_transfers'
+  | 'nft_holdings'
+  | 'block_info'
   | 'unknown';
 
 /**
@@ -156,6 +166,95 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Check for transaction queries
+  const txHashRegex = /0x[a-fA-F0-9]{64}/;
+  const txHashMatch = input.match(txHashRegex);
+  
+  if (txHashMatch) {
+    const txHash = txHashMatch[0];
+    
+    // Check for specific transaction query types
+    if (/summary|explain|what happened/i.test(lowerInput)) {
+      return {
+        type: 'transaction_summary',
+        entities: {
+          txHash,
+          chain: extractChain(input),
+        },
+        raw: input,
+      };
+    }
+    
+    if (/logs|events/i.test(lowerInput)) {
+      return {
+        type: 'transaction_logs',
+        entities: {
+          txHash,
+          chain: extractChain(input),
+        },
+        raw: input,
+      };
+    }
+    
+    // Default to detailed transaction info
+    return {
+      type: 'transaction_info',
+      entities: {
+        txHash,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for token transfers queries
+  if (
+    /transfers?|sent|received/i.test(lowerInput) && 
+    /token/i.test(lowerInput) && 
+    !/holders?|holdings/i.test(lowerInput)
+  ) {
+    const address = extractAddress(input);
+    const token = extractAddress(input);
+    return {
+      type: 'token_transfers',
+      entities: {
+        address: address || undefined,
+        token: token || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for NFT queries
+  if (/nft|collection|crypto.*punks|bored.*ape|pixel/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    return {
+      type: 'nft_holdings',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for specific block queries (not latest)
+  const blockNumberRegex = /\bblock\s+(0x[a-fA-F0-9]+|\d+)/i;
+  const blockMatch = input.match(blockNumberRegex);
+  
+  if (blockMatch && !/latest|current|newest/i.test(lowerInput)) {
+    const blockRef = blockMatch[1];
+    return {
+      type: 'block_info',
+      entities: {
+        block: blockRef,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
   // Fallback: If input is just a chain name or short chain reference, treat as chain status
   // This handles queries like "ethereum", "base mainnet", "optimism", etc.
   const chainName = extractChain(input);
@@ -204,6 +303,20 @@ export function validateParsedQuery(query: ParsedQuery): {
       break;
     case 'account_summary':
       if (!query.entities.address) missing.push('wallet address');
+      break;
+    case 'transaction_info':
+    case 'transaction_summary':
+    case 'transaction_logs':
+      if (!query.entities.txHash) missing.push('transaction hash');
+      break;
+    case 'token_transfers':
+      if (!query.entities.address) missing.push('address');
+      break;
+    case 'nft_holdings':
+      if (!query.entities.address) missing.push('address');
+      break;
+    case 'block_info':
+      if (!query.entities.block) missing.push('block number or hash');
       break;
     case 'latest_block':
     case 'chain_status':

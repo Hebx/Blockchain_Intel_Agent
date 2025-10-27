@@ -1,6 +1,7 @@
 import { useState, forwardRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ChainSelector, { type Chain } from '@/components/web3/ChainSelector';
 import { SUPPORTED_CHAINS } from '@/components/web3/ChainSelector';
 
@@ -25,7 +26,18 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
         }}
       >
         <div className="flex gap-2">
-          <ChainSelector value={chainId} onValueChange={setChainId} />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <ChainSelector value={chainId} onValueChange={setChainId} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Select blockchain network</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <Input
             ref={ref}
             className="flex-1"
