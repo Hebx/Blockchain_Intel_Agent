@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import ChatInput from '@/components/chat-input';
 import { useEffect, useRef } from 'react';
 
@@ -22,7 +23,9 @@ export default function Web3AgentPage() {
     }
   }, []);
 
-  const { messages, sendMessage, status, error } = useChat();
+  const { messages, sendMessage, status, error, stop } = useChat({
+    transport: new DefaultChatTransport({ api: '/api/web3-agent' }),
+  });
 
   return (
     <div className="flex flex-col h-screen">
@@ -118,6 +121,7 @@ export default function Web3AgentPage() {
           <ChatInput
             status={status === 'streaming' ? 'streaming' : 'idle'}
             onSubmit={text => sendMessage({ text })}
+            stop={stop}
           />
         </div>
       </div>
