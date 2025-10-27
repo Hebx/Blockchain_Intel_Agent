@@ -70,7 +70,7 @@ export function parseWeb3Query(input: string): ParsedQuery {
 
   // Check for latest block queries
   if (
-    /latest\s+block|current\s+block|newest\s+block|last\s+block/i.test(input)
+    /latest\s+(ethereum\s+)?block|current\s+block|newest\s+block|last\s+(ethereum\s+)?block|block\s+number/i.test(input)
   ) {
     return {
       type: 'latest_block',

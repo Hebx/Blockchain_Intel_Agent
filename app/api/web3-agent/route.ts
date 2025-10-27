@@ -63,18 +63,18 @@ export async function POST(req: Request) {
     const cachedClient = getCachedBlockscoutClient();
     let context: any = null;
 
+    // Map chain name to chain ID (Ethereum = 1)
+    const chainIdMap: Record<string, number> = {
+      ethereum: 1,
+      base: 8453,
+      optimism: 10,
+      polygon: 137,
+      arbitrum: 42161,
+    };
+    const chainId = chainIdMap[parsedQuery.entities.chain?.toLowerCase() || 'ethereum'] || 1;
+
     if (parsedQuery.type !== 'unknown') {
       try {
-        // Map chain name to chain ID (Ethereum = 1)
-        const chainIdMap: Record<string, number> = {
-          ethereum: 1,
-          base: 8453,
-          optimism: 10,
-          polygon: 137,
-          arbitrum: 42161,
-        };
-        const chainId = chainIdMap[parsedQuery.entities.chain?.toLowerCase() || 'ethereum'] || 1;
-
         switch (parsedQuery.type) {
           case 'latest_block':
             context = await cachedClient.getLatestBlock(chainId);

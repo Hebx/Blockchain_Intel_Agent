@@ -48,4 +48,11 @@ export function generateCacheKey(
   return `${prefix}:${parts.join(':')}`;
 }
 
+/**
+ * Generate MCP cache key (alias for generateCacheKey with MCP_DATA prefix)
+ */
+export function generateMCPCacheKey(...parts: (string | number)[]): string {
+  return generateCacheKey(CACHE_PREFIX.MCP_DATA, ...parts);
+}
+
 
