@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   try {
     // 1. Extract request data
-    const { messages, conversationId } = await req.json();
+    const { messages, conversationId, chainId: requestChainId } = await req.json();
     console.log('Received messages:', JSON.stringify(messages, null, 2));
     
     // Extract query - handle multiple message formats
@@ -30,6 +30,7 @@ export async function POST(req: Request) {
                   '';
     
     console.log('Extracted query:', query);
+    console.log('Request chainId:', requestChainId);
 
     // 2. Rate limiting (10 requests per second)
     const rateLimiter = getRateLimiter();
@@ -83,7 +84,11 @@ export async function POST(req: Request) {
       polygon: 137,
       arbitrum: 42161,
     };
-    const chainId = chainIdMap[parsedQuery.entities.chain?.toLowerCase() || 'ethereum'] || 1;
+    
+    // Use provided chainId from request, fall back to parsed query chain, then default to ethereum
+    const chainId = requestChainId || 
+                    chainIdMap[parsedQuery.entities.chain?.toLowerCase() || 'ethereum'] || 
+                    1;
 
     if (parsedQuery.type !== 'unknown') {
       try {

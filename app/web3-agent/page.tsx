@@ -3,9 +3,14 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import ChatInput from '@/components/chat-input';
-import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { ChevronLeft } from 'lucide-react';
 
 export default function Web3AgentPage() {
+  const [chainId, setChainId] = useState(1);
+  const inputRef = useRef<HTMLInputElement>(null);
   // Generate or retrieve conversation ID from session
   const conversationIdRef = useRef<string | null>(null);
 
@@ -23,17 +28,64 @@ export default function Web3AgentPage() {
     }
   }, []);
 
+  // Create custom transport that modifies the fetch to include chainId
+  const customTransport = useMemo(() => {
+    const originalFetch = globalThis.fetch;
+    
+    return new DefaultChatTransport({ 
+      api: '/api/web3-agent',
+      fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        // If there's a body, parse it and add chainId
+        if (init?.body && typeof init.body === 'string') {
+          try {
+            const bodyData = JSON.parse(init.body);
+            init.body = JSON.stringify({ ...bodyData, chainId });
+          } catch (e) {
+            // If parsing fails, just use original body
+          }
+        }
+        return originalFetch(input, init);
+      }
+    });
+  }, [chainId]);
+
   const { messages, sendMessage, status, error, stop } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/web3-agent' }),
+    transport: customTransport,
   });
+
+  const handleSubmit = (text: string, submittedChainId: number) => {
+    // Check if query has placeholder that needs to be filled
+    if (text.includes('[enter')) {
+      alert('Please fill in the required information before submitting');
+      return;
+    }
+    
+    setChainId(submittedChainId);
+    sendMessage({ text });
+  };
+
+  const handleTemplateClick = (template: string) => {
+    // Focus input field and insert template
+    if (inputRef.current) {
+      inputRef.current.value = template;
+      inputRef.current.focus();
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
       <header className="border-b p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold">🌐 Web3 Intelligence Agent</h1>
-          <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <Link href="/">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold">🌐 Web3 Intelligence Agent</h1>
+            <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+          </div>
         </div>
       </header>
 
@@ -56,14 +108,12 @@ export default function Web3AgentPage() {
                   onClick={() => sendMessage({ text: 'Show me the top 10 holders of USDC' })}
                 />
                 <QuerySuggestion
-                  text="Analyze a wallet address"
-                  onClick={() =>
-                    sendMessage({ text: 'Analyze account 0x... - show recent transactions' })
-                  }
+                  text="Analyze this wallet"
+                  onClick={() => handleTemplateClick('Analyze wallet: [enter wallet address here]')}
                 />
                 <QuerySuggestion
-                  text="Check chain health"
-                  onClick={() => sendMessage({ text: "What's the current health status of the network?" })}
+                  text="Show top holders of token"
+                  onClick={() => handleTemplateClick('Show top 10 holders of [enter token contract address]')}
                 />
               </div>
             </div>
@@ -119,8 +169,9 @@ export default function Web3AgentPage() {
       <div className="border-t bg-white p-4">
         <div className="max-w-4xl mx-auto">
           <ChatInput
+            ref={inputRef}
             status={status === 'streaming' ? 'streaming' : 'idle'}
-            onSubmit={text => sendMessage({ text })}
+            onSubmit={handleSubmit}
             stop={stop}
           />
         </div>
@@ -140,12 +191,13 @@ function QuerySuggestion({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
+      variant="outline"
       onClick={onClick}
-      className="text-left p-4 border rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors"
+      className="text-left p-4 h-auto hover:bg-blue-50 hover:border-blue-300 transition-colors"
     >
       <p className="text-sm font-medium text-gray-800">{text}</p>
-    </button>
+    </Button>
   );
 }
 

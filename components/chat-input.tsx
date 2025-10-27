@@ -1,50 +1,56 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import ChainSelector, { type Chain } from '@/components/web3/ChainSelector';
+import { SUPPORTED_CHAINS } from '@/components/web3/ChainSelector';
 
-export default function ChatInput({
-  status,
-  onSubmit,
-  stop,
-}: {
+interface ChatInputProps {
   status: string;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string, chainId: number) => void;
   stop?: () => void;
-}) {
-  const [text, setText] = useState('');
-
-  return (
-    <form
-      onSubmit={e => {
-        e.preventDefault();
-        if (text.trim() === '') return;
-        onSubmit(text);
-        setText('');
-      }}
-    >
-      <div className="flex gap-2">
-        <input
-          className="flex-1 p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Ask about blockchain data..."
-          disabled={status === 'streaming'}
-          value={text}
-          onChange={e => setText(e.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={status === 'streaming' || text.trim() === ''}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {status === 'streaming' ? 'Sending...' : 'Send'}
-        </button>
-        {stop && status === 'streaming' && (
-          <button
-            type="button"
-            onClick={stop}
-            className="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
-          >
-            Stop
-          </button>
-        )}
-      </div>
-    </form>
-  );
 }
+
+const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
+  ({ status, onSubmit, stop }, ref) => {
+    const [text, setText] = useState('');
+    const [chainId, setChainId] = useState(1);
+
+    return (
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          if (text.trim() === '') return;
+          onSubmit(text, chainId);
+          setText('');
+        }}
+      >
+        <div className="flex gap-2">
+          <ChainSelector value={chainId} onValueChange={setChainId} />
+          <Input
+            ref={ref}
+            className="flex-1"
+            placeholder="Ask about blockchain data..."
+            disabled={status === 'streaming'}
+            value={text}
+            onChange={e => setText(e.target.value)}
+          />
+          <Button
+            type="submit"
+            disabled={status === 'streaming' || text.trim() === ''}
+          >
+            {status === 'streaming' ? 'Sending...' : 'Send'}
+          </Button>
+          {stop && status === 'streaming' && (
+            <Button type="button" variant="destructive" onClick={stop}>
+              Stop
+            </Button>
+          )}
+        </div>
+      </form>
+    );
+  }
+);
+
+ChatInput.displayName = 'ChatInput';
+
+export default ChatInput;
