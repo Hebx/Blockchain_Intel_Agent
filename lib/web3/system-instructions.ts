@@ -230,6 +230,19 @@ Do not include query strings in endpoint_path; pass all query parameters via que
 
 export const DIRECT_API_ENDPOINTS = `ADVANCED API USAGE: For specialized or chain-specific data not covered by other tools, you can use direct_api_call. This tool can call a curated list of raw Blockscout API endpoints.
 
+## DIRECT_API_CALL PARAMETERS (from OpenAPI spec)
+
+When using direct_api_call, you MUST provide:
+- chain_id (required): Blockchain ID (e.g., "1" for Ethereum)
+- endpoint_path (required): The Blockscout API path to call (e.g., '/api/v2/stats')
+- query_params (optional): Additional query parameters as object with key-value pairs
+- cursor (optional): Pagination cursor from previous response
+
+Example parameters for endpoint_path:
+- "/api/v2/stats" - Network stats
+- "/api/v2/tokens/{address}/holders" - Token holders (replace {address} with actual address)
+- "/api/v2/addresses/{address}" - Address info (replace {address} with actual address)
+
 ## COMMON ENDPOINTS (Available for all chains)
 
 ### Stats
@@ -312,11 +325,15 @@ export const DIRECT_API_ENDPOINTS = `ADVANCED API USAGE: For specialized or chai
  * Get complete system instructions for the Web3 agent
  */
 export function getWeb3SystemInstructions(): string {
+  const toolDetails = getBlockscoutToolDetails();
+  
   return `${WEB3_AGENT_SYSTEM_INSTRUCTIONS}
 
 ## AVAILABLE TOOLS AND THEIR DESCRIPTIONS
 
 ${AVAILABLE_TOOLS_DESCRIPTIONS}
+
+${toolDetails}
 
 ## DIRECT API ENDPOINTS FOR ADVANCED QUERIES
 
@@ -327,4 +344,33 @@ ${DIRECT_API_ENDPOINTS}
 ALWAYS start your response with the chain name: "On [Chain Name]:"
 
 Then provide a clear, comprehensive answer to the user's query, using the data gathered from Blockscout API calls. Be specific with addresses, amounts, transaction hashes, and any other blockchain data.`;
+}
+
+/**
+ * Get Blockscout MCP tool descriptions with enhanced detail from OpenAPI spec
+ */
+export function getBlockscoutToolDetails(): string {
+  return `
+## ENHANCED TOOL DETAILS (from OpenAPI spec)
+
+### Query Parameters for Time-Based Filtering
+
+Most transaction/transfer tools support optional time filtering:
+- age_from: Start date/time (ISO 8601 format, e.g., "2024-01-01T00:00:00Z")
+- age_to: End date/time (ISO 8601 format, e.g., "2024-12-31T23:59:59Z")
+- cursor: Pagination cursor from previous response
+
+### Transaction Filtering
+- methods: Method signature to filter transactions (e.g., "0x304e6ade")
+- include_transactions: If true, includes transaction hash list in block info
+
+### Contract Reading
+- abi: JSON string of specific function ABI
+- function_name: Symbolic name matching ABI
+- args: JSON string array of arguments (must match ABI input types)
+- block: Block identifier (number or "latest")
+
+### Optional Parameters
+- include_raw_input: Include raw hex input in transaction info (default: false)
+- file_name: Specific source file to inspect in inspect_contract_code`;
 }
