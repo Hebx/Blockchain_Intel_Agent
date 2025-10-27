@@ -11,7 +11,7 @@ export function createWeb3BlockscoutAgent() {
   const blockscoutUrl = process.env.BLOCKSCOUT_MCP_URL || 'https://mcp.blockscout.com';
 
   const agent = new ToolLoopAgent({
-    model: openai('gpt-4o-mini'), // Using GPT-4o-mini for cost-effective reasoning
+    model: openai('gpt-5-mini'), // Using GPT-5-mini for cost-effective reasoning
     providerOptions: {
       openai: {
         mcpServers: [
