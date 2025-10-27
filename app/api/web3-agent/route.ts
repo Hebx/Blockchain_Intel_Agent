@@ -50,7 +50,10 @@ export async function POST(req: Request) {
     console.log('Parsed query:', parsedQuery);
 
     // 4. Generate query hash for AI output caching
-    const queryHash = createHash('sha256').update(query).digest('hex');
+    // Include parsed query info in the cache key to make it more specific
+    const queryHash = createHash('sha256')
+      .update(query + JSON.stringify(parsedQuery.entities))
+      .digest('hex');
     const aiOutputKey = generateAIOutputCacheKey(queryHash);
 
     // 5. Check AI output cache
