@@ -155,10 +155,13 @@ export async function POST(req: Request) {
       cachedContext: context,
       conversationHistory: history,
       queryType: parsedQuery.type,
+      chainId,
+      chainName: Object.entries(chainIdMap).find(([_, id]) => id === chainId)?.[0] || 'ethereum',
     };
     
     const { prompt, tokenEstimate } = buildOptimizedPrompt(promptContext);
     console.log('Prompt token estimate:', tokenEstimate);
+    console.log('Chain context:', promptContext.chainName, chainId);
 
     // 9. Stream AI response
     const result = streamText({

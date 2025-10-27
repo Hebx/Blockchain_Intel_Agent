@@ -18,6 +18,8 @@ export interface PromptContext {
   cachedContext?: any;
   conversationHistory?: Message[];
   queryType?: string;
+  chainId?: number;
+  chainName?: string;
 }
 
 /**
@@ -27,11 +29,24 @@ export function buildOptimizedPrompt(context: PromptContext): {
   prompt: string;
   tokenEstimate: number;
 } {
-  const { query, cachedContext, conversationHistory = [], queryType } = context;
+  const { query, cachedContext, conversationHistory = [], queryType, chainId, chainName } = context;
 
   // Determine query type and build appropriate prompt
   const parsedQuery = parseWeb3Query(query);
   const effectiveType = queryType || parsedQuery.type;
+
+  // Get chain name from ID
+  const chainNames: Record<number, string> = {
+    1: 'Ethereum',
+    8453: 'Base',
+    10: 'Optimism',
+    137: 'Polygon',
+    42161: 'Arbitrum',
+  };
+  const effectiveChainName = chainName || chainNames[chainId || 1] || 'Ethereum';
+  
+  // Add chain context prefix to query
+  const chainContextPrefix = `[Query for ${effectiveChainName} blockchain]\n\n`;
 
   let prompt: string;
 
@@ -40,6 +55,7 @@ export function buildOptimizedPrompt(context: PromptContext): {
       prompt = buildAccountAnalysisPrompt(
         parsedQuery.entities.address || '',
         cachedContext || {},
+        effectiveChainName,
       );
       break;
 
@@ -47,6 +63,7 @@ export function buildOptimizedPrompt(context: PromptContext): {
       prompt = buildTokenAnalysisPrompt(
         parsedQuery.entities.token || '',
         cachedContext || {},
+        effectiveChainName,
       );
       break;
 
@@ -54,16 +71,20 @@ export function buildOptimizedPrompt(context: PromptContext): {
       prompt = buildContractEventsPrompt(
         parsedQuery.entities.contract || '',
         cachedContext || {},
+        effectiveChainName,
       );
       break;
 
     case 'chain_status':
-      prompt = buildChainHealthPrompt(cachedContext || {});
+      prompt = buildChainHealthPrompt(cachedContext || {}, effectiveChainName);
       break;
 
     default:
-      prompt = buildWeb3Prompt(query, cachedContext, conversationHistory);
+      prompt = buildWeb3Prompt(query, cachedContext, conversationHistory, effectiveChainName);
   }
+
+  // Add chain context prefix
+  prompt = chainContextPrefix + prompt;
 
   // Estimate token usage
   const tokenEstimate = Math.ceil(prompt.length / 4); // ~4 chars per token
