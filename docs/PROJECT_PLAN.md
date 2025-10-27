@@ -3,6 +3,7 @@
 ## Overview
 
 Transform the existing Vercel AI SDK example into a **Web3 Intelligence Agent** that combines:
+
 - **Vercel AI SDK** for conversational AI reasoning
 - **Blockscout MCP Server** (`https://mcp.blockscout.com`) for blockchain data
 - **Docker** for containerization
@@ -62,9 +63,11 @@ nodeops-web3-agent-node/
 ## Milestones
 
 ### 📋 **Milestone 1: Project Setup & Infrastructure**
+
 **Goal**: Establish project structure, Docker setup, and environment configuration
 
 **Files to Create/Modify**:
+
 - `.env.local.example` - Add Blockscout MCP and AI SDK env vars
 - `docker/Dockerfile` - Multi-stage Docker build
 - `docker/docker-compose.yml` - Local development environment
@@ -74,6 +77,7 @@ nodeops-web3-agent-node/
 - Update `package.json` - Add Blockscout-specific dependencies
 
 **Functions/Modules**:
+
 ```typescript
 // .env.local.example
 VERCEL_AI_KEY=your_vercel_ai_key
@@ -83,6 +87,7 @@ NODE_ENV=production
 ```
 
 **Testing**:
+
 - [ ] Docker builds successfully
 - [ ] Docker container starts without errors
 - [ ] Environment variables load correctly
@@ -93,24 +98,27 @@ NODE_ENV=production
 ---
 
 ### 📋 **Milestone 2: Blockscout MCP Integration**
+
 **Goal**: Connect to Blockscout MCP Server and implement data fetching
 
 **Files to Create/Modify**:
+
 - `util/mcp/blockscout-handler.ts` - MCP server initialization with Blockscout
 - `lib/web3/blockscout-mcp.ts` - MCP client wrapper with error handling
 - `lib/web3/query-parser.ts` - Parse natural language queries into MCP calls
 - `app/api/web3-agent/blockscout.ts` - Backend MCP client
 
 **Functions/Modules**:
+
 ```typescript
 // lib/web3/blockscout-mcp.ts
 export class BlockscoutMcpClient {
-  async fetchBlockchainData(query: string): Promise<any>
-  async getLatestBlock(): Promise<any>
-  async getTokenHolders(address: string): Promise<any>
-  async getAccountSummary(address: string): Promise<any>
-  async getContractEvents(contract: string): Promise<any>
-  async getChainHealth(): Promise<any>
+  async fetchBlockchainData(query: string): Promise<any>;
+  async getLatestBlock(): Promise<any>;
+  async getTokenHolders(address: string): Promise<any>;
+  async getAccountSummary(address: string): Promise<any>;
+  async getContractEvents(contract: string): Promise<any>;
+  async getChainHealth(): Promise<any>;
 }
 
 // lib/web3/query-parser.ts
@@ -133,6 +141,7 @@ export function initializeBlockscoutMcpServer(
 ```
 
 **Testing**:
+
 - [ ] MCP connection established to Blockscout
 - [ ] Can fetch latest block successfully
 - [ ] Can query account information
@@ -144,14 +153,17 @@ export function initializeBlockscoutMcpServer(
 ---
 
 ### 📋 **Milestone 3: AI Prompt Engineering & Reasoning**
+
 **Goal**: Implement AI reasoning layer with blockchain-specific prompts
 
 **Files to Create/Modify**:
+
 - `lib/web3/prompt-builder.ts` - Super-prompt templates for Web3 analysis
 - `agent/web3-blockscout-agent.ts` - Agent configuration
 - `app/api/web3-agent/prompt-builder.ts` - Backend prompt logic
 
 **Functions/Modules**:
+
 ```typescript
 // lib/web3/prompt-builder.ts
 export function buildWeb3Prompt(query: string, context: any): string {
@@ -167,20 +179,23 @@ export function buildWeb3Prompt(query: string, context: any): string {
 
 // agent/web3-blockscout-agent.ts
 export const web3BlockscoutAgent = new ToolLoopAgent({
-  model: anthropic('claude-sonnet-4-5'),
+  model: anthropic("claude-sonnet-4-5"),
   providerOptions: {
     anthropic: {
-      mcpServers: [{
-        type: 'url',
-        name: 'blockscout',
-        url: process.env.BLOCKSCOUT_MCP_URL,
-      }],
+      mcpServers: [
+        {
+          type: "url",
+          name: "blockscout",
+          url: process.env.BLOCKSCOUT_MCP_URL,
+        },
+      ],
     },
   },
 });
 ```
 
 **Testing**:
+
 - [ ] Prompt templates generate correctly
 - [ ] AI receives blockchain context properly
 - [ ] AI reasoning returns structured insights
@@ -191,15 +206,18 @@ export const web3BlockscoutAgent = new ToolLoopAgent({
 ---
 
 ### 📋 **Milestone 4: Backend API & Data Flow**
+
 **Goal**: Create backend API that orchestrates MCP → AI → Response flow
 
 **Files to Create/Modify**:
+
 - `app/api/web3-agent/route.ts` - Main agent endpoint
 - `app/api/query/route.ts` - REST query endpoint
 - `app/api/web3-agent/cache.ts` - Query caching (Redis or in-memory)
 - `lib/web3/rate-limiter.ts` - Rate limiting (10 req/sec)
 
 **Functions/Modules**:
+
 ```typescript
 // app/api/web3-agent/route.ts
 export async function POST(req: Request) {
@@ -219,6 +237,7 @@ export async function POST(req: Request) {
 ```
 
 **Testing**:
+
 - [ ] API endpoint responds to queries
 - [ ] Data flows: User → Backend → MCP → AI → Response
 - [ ] Caching reduces duplicate requests
@@ -230,22 +249,25 @@ export async function POST(req: Request) {
 ---
 
 ### 📋 **Milestone 5: Frontend Chat UI**
+
 **Goal**: Build conversational UI for Web3 queries
 
 **Files to Create/Modify**:
+
 - `app/web3-agent/page.tsx` - Chat interface
 - `app/web3-agent/components/query-form.tsx` - Query input component
 - `app/web3-agent/components/result-view.tsx` - Result display
 - `components/web3/query-suggestions.tsx` - Predefined query suggestions
 
 **Functions/Modules**:
+
 ```typescript
 // app/web3-agent/page.tsx
 export default function Web3Agent() {
   const { messages, sendMessage } = useChat({
-    transport: new DefaultChatTransport({ api: '/api/web3-agent' }),
+    transport: new DefaultChatTransport({ api: "/api/web3-agent" }),
   });
-  
+
   // Display chat messages with Web3-specific formatting
   // Show tool usage (MCP calls)
   // Display blockchain insights
@@ -260,6 +282,7 @@ export function QueryForm() {
 ```
 
 **Testing**:
+
 - [ ] Chat UI renders correctly
 - [ ] Can send messages and receive responses
 - [ ] Streaming responses update in real-time
@@ -271,15 +294,18 @@ export function QueryForm() {
 ---
 
 ### 📋 **Milestone 6: Demo Queries & Polish**
+
 **Goal**: Implement and test 5+ demo queries, add monitoring/logging
 
 **Files to Create/Modify**:
+
 - `app/web3-agent/components/demo-queries.tsx` - Predefined queries
 - `lib/monitoring/logger.ts` - Logging utilities
 - `lib/monitoring/metrics.ts` - Performance tracking
 - `scripts/test-demo-queries.sh` - Automated test script
 
 **Demo Queries**:
+
 1. **Latest Block Info**: "What's the latest block on Ethereum?"
 2. **Token Holders**: "Show me the top 10 holders of USDC"
 3. **Smart Contract Events**: "List recent events for contract 0x..."
@@ -287,17 +313,19 @@ export function QueryForm() {
 5. **Chain Health**: "What's the current health status of the network?"
 
 **Functions/Modules**:
+
 ```typescript
 // lib/monitoring/logger.ts
-export function logQuery(query: string, duration: number, success: boolean)
-export function logError(error: Error, context: any)
+export function logQuery(query: string, duration: number, success: boolean);
+export function logError(error: Error, context: any);
 
 // lib/monitoring/metrics.ts
-export function trackLatency(endpoint: string, duration: number)
-export function trackFailureRate(endpoint: string, failures: number)
+export function trackLatency(endpoint: string, duration: number);
+export function trackFailureRate(endpoint: string, failures: number);
 ```
 
 **Testing**:
+
 - [ ] All 5 demo queries work correctly
 - [ ] Query results are accurate and formatted
 - [ ] Logging captures queries, responses, errors
@@ -309,9 +337,11 @@ export function trackFailureRate(endpoint: string, failures: number)
 ---
 
 ### 📋 **Milestone 7: Finalize Deployment & Documentation**
+
 **Goal**: Complete Docker build, NodeOps template, and documentation
 
 **Files to Create/Modify**:
+
 - `Dockerfile` - Production-optimized Docker build
 - `nodeops/template.yaml` - Complete NodeOps deployment config
 - `README.md` - Comprehensive setup and usage guide
@@ -319,6 +349,7 @@ export function trackFailureRate(endpoint: string, failures: number)
 - `.github/workflows/deploy.yml` - CI/CD pipeline (optional)
 
 **NodeOps Template**:
+
 ```yaml
 name: "web3-ai-agent"
 category: "Tooling"
@@ -343,6 +374,7 @@ scaling:
 ```
 
 **Functions/Modules**:
+
 ```bash
 # scripts/deploy-nodeops.sh
 #!/bin/bash
@@ -352,6 +384,7 @@ scaling:
 ```
 
 **Testing**:
+
 - [ ] Docker build succeeds in production mode
 - [ ] NodeOps deployment works (one-click deploy)
 - [ ] Autoscaling functions (min 1, max 5 instances)
@@ -379,22 +412,26 @@ graph TD
 ## Key Considerations
 
 ### Rate Limiting
+
 - Blockscout MCP: 10 requests/second
 - Implement client-side and server-side rate limiting
 - Cache frequent queries (latest block, popular tokens)
 
 ### Error Handling
+
 - MCP connection failures → fallback to direct Blockscout API
 - AI timeouts → return partial results with context
 - Invalid queries → helpful error messages
 
 ### Caching Strategy
+
 - Cache latest block (30 seconds)
 - Cache token holders (5 minutes)
 - Cache account summaries (1 minute)
 - Use Redis for production, in-memory for dev
 
 ### AI Prompt Optimization
+
 - Limit context size to prevent token overflow
 - Use structured data format (JSON) for blockchain data
 - Include query type in prompt (e.g., "analyze account" vs "analyze token")
@@ -440,4 +477,3 @@ graph TD
 
 **Last Updated**: [Current Date]  
 **Status**: Planning Phase
-
