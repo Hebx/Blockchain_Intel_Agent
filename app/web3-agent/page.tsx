@@ -306,9 +306,16 @@ export default function Web3AgentPage() {
           
           {!isLoading && messages.length === 0 && (
             <div className="text-center py-12">
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold mb-2">Welcome to Web3 Agent!</h2>
-                <p className="text-gray-600">
+              <div className="mb-10">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl">
+                    <Sparkles className="h-8 w-8 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Welcome to Web3 Agent!
+                  </h2>
+                </div>
+                <p className="text-gray-600 text-lg">
                   Ask me anything about the blockchain. Try these queries:
                 </p>
               </div>
@@ -476,17 +483,17 @@ function QueryCard({
 }) {
   return (
     <Card 
-      className="cursor-pointer hover:shadow-lg transition-all hover:border-blue-400 hover:scale-105"
+      className="cursor-pointer hover:shadow-xl transition-all duration-200 hover:border-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:scale-[1.02] group"
       onClick={onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+      <CardContent className="p-6 group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-purple-50 transition-colors">
+        <div className="flex items-start gap-4">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg text-white group-hover:scale-110 transition-transform">
             {icon}
           </div>
           <div className="flex-1 text-left">
-            <h3 className="font-semibold text-gray-900 mb-1">{title}</h3>
-            <p className="text-sm text-gray-600">{description}</p>
+            <h3 className="font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{title}</h3>
+            <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
           </div>
         </div>
       </CardContent>
