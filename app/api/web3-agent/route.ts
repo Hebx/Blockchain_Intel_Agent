@@ -182,9 +182,24 @@ export async function POST(req: Request) {
             break;
           case 'nft_holdings':
             if (parsedQuery.entities.address) {
-              console.log('Looking up NFT holdings for:', parsedQuery.entities.address);
+              let resolvedAddress = parsedQuery.entities.address;
+              
+              // Check if address is an ENS name
+              if (parsedQuery.entities.address.endsWith('.eth')) {
+                console.log('Resolving ENS name:', parsedQuery.entities.address);
+                const ensResolved = await cachedClient.resolveENS(parsedQuery.entities.address);
+                if (ensResolved) {
+                  resolvedAddress = ensResolved;
+                  console.log(`Resolved ENS ${parsedQuery.entities.address} to ${resolvedAddress}`);
+                } else {
+                  context = { error: `Could not resolve ENS name: ${parsedQuery.entities.address}` };
+                  break;
+                }
+              }
+              
+              console.log('Looking up NFT holdings for:', resolvedAddress);
               const limit = parsedQuery.entities.limit || 50;
-              context = await cachedClient.getNFTTokens(chainId, parsedQuery.entities.address, limit);
+              context = await cachedClient.getNFTTokens(chainId, resolvedAddress, limit);
             } else {
               context = { error: 'Address not provided' };
             }

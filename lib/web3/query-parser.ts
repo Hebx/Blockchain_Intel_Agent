@@ -218,7 +218,7 @@ export function parseWeb3Query(input: string): ParsedQuery {
 
   // Check for standard NFT queries
   if (/nft|collection|crypto.*punks|bored.*ape|pixel|non.fungible/i.test(lowerInput)) {
-    const address = extractAddress(input);
+    const address = extractAddress(input) || extractENSName(input);
     return {
       type: 'nft_holdings',
       entities: {
