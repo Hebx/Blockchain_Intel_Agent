@@ -16,6 +16,7 @@ import {
   buildGasAnalysisPrompt,
   buildBlockInfoPrompt,
 } from '@/lib/web3/prompt-builder';
+import { buildAdvancedAnalysisPrompt, detectAnalysisType } from '@/lib/web3/advanced-prompts';
 import type { Message } from '@/lib/cache/conversation-manager';
 import { parseWeb3Query } from '@/lib/web3/query-parser';
 
@@ -124,6 +125,35 @@ export function buildOptimizedPrompt(context: PromptContext): {
         cachedContext || {},
         effectiveChainName,
       );
+      break;
+
+    case 'full_account_analysis':
+    case 'chain_of_custody':
+    case 'defi_analysis':
+    case 'nft_portfolio_analysis':
+    case 'transaction_flow_analysis':
+      // Use advanced analysis prompts
+      const analysisType = detectAnalysisType(query);
+      prompt = buildAdvancedAnalysisPrompt(analysisType, {
+        address: parsedQuery.entities.address,
+        txHash: parsedQuery.entities.txHash,
+        chainId: chainId || 1,
+        chainName: effectiveChainName,
+        data: cachedContext || {},
+        additionalData: { query },
+      });
+      break;
+
+    case 'multi_address_analysis':
+      prompt = buildAdvancedAnalysisPrompt('multi_address', {
+        chainId: chainId || 1,
+        chainName: effectiveChainName,
+        data: cachedContext || {},
+        additionalData: { 
+          addresses: parsedQuery.entities.multipleAddresses || [],
+          query,
+        },
+      });
       break;
 
     default:

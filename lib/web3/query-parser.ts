@@ -14,6 +14,7 @@ export interface ParsedQuery {
     block?: string;
     ensName?: string;
     timeRange?: string;
+    multipleAddresses?: string[];
   };
   raw: string;
 }
@@ -30,6 +31,12 @@ export type QueryType =
   | 'token_transfers'
   | 'nft_holdings'
   | 'block_info'
+  | 'full_account_analysis'
+  | 'chain_of_custody'
+  | 'defi_analysis'
+  | 'nft_portfolio_analysis'
+  | 'transaction_flow_analysis'
+  | 'multi_address_analysis'
   | 'unknown';
 
 /**
@@ -124,7 +131,72 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Check for advanced analysis queries (early detection for complex analyses)
+  if (/full.*account|comprehensive|deep.*analysis|complete.*profile/i.test(lowerInput) && extractAddress(input)) {
+    const address = extractAddress(input);
+    return {
+      type: 'full_account_analysis',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for chain of custody / fund tracing queries
+  if (/chain.of.custody|fund.*flow|trace.*fund|track.*money|where.*came.*from/i.test(lowerInput) && extractAddress(input)) {
+    const address = extractAddress(input);
+    return {
+      type: 'chain_of_custody',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for DeFi analysis queries
+  if (/defi.*activity|yield.*farm|lending.*position|liquidity.*pool.*analysis/i.test(lowerInput) && extractAddress(input)) {
+    const address = extractAddress(input);
+    return {
+      type: 'defi_analysis',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for comprehensive transaction flow analysis
+  const txHashForFlow = input.match(/0x[a-fA-F0-9]{64}/);
+  if (/transaction.*flow|swap.*analysis|dex.*flow|route.*analysis/i.test(lowerInput) && txHashForFlow) {
+    return {
+      type: 'transaction_flow_analysis',
+      entities: {
+        txHash: txHashForFlow[0],
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
   // Check for NFT queries (must come before account_summary to avoid false matches)
+  if (/nft.*portfolio|nft.*analysis|collection.*analysis|nft.*profile/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    return {
+      type: 'nft_portfolio_analysis',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for standard NFT queries
   if (/nft|collection|crypto.*punks|bored.*ape|pixel|non.fungible/i.test(lowerInput)) {
     const address = extractAddress(input);
     return {
@@ -132,6 +204,19 @@ export function parseWeb3Query(input: string): ParsedQuery {
       entities: {
         address: address || undefined,
         chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for multi-address comparison
+  if (/compare|multi.*address|multiple.*wallet|address.*relationship/i.test(lowerInput)) {
+    const addresses = input.match(/0x[a-fA-F0-9]{40}/g) || [];
+    return {
+      type: 'multi_address_analysis',
+      entities: {
+        chain: extractChain(input),
+        multipleAddresses: addresses,
       },
       raw: input,
     };
