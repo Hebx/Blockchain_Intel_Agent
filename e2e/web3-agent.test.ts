@@ -43,35 +43,36 @@ describe('Web3 Intelligence Agent', () => {
 
   describe('Message Input and Submission', () => {
     it('should allow typing and submitting a message', () => {
-      cy.get('input[type="text"]', { timeout: 10000 }).should('be.visible');
-      cy.get('input[type="text"]').type('What is the latest block on Ethereum?');
-      cy.get('button[type="submit"]').should('be.visible');
-      cy.get('button[type="submit"]').click();
+      // Use more flexible selector for input
+      cy.get('input[placeholder*="Ask about blockchain"]', { timeout: 10000 }).should('be.visible');
+      cy.get('input[placeholder*="Ask about blockchain"]').type('What is the latest block on Ethereum?');
+      cy.contains('button', 'Send').should('be.visible');
+      cy.contains('button', 'Send').click();
       
       // Wait a bit for the message to appear
       cy.wait(2000);
       // Should show user message or at least that input is accepted
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should show loading state while streaming', () => {
-      cy.get('input[type="text"]').type('Show latest block');
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('Show latest block');
+      cy.contains('button', 'Send').click();
       
       // Wait for potential loading state
       cy.wait(1000);
       // Just verify we can still interact
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should display AI response after completion', () => {
-      cy.get('input[type="text"]').type('What is the latest block?');
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('What is the latest block?');
+      cy.contains('button', 'Send').click();
       
       // Wait for response
       cy.wait(5000); // Give time for API call
       // Just verify the page is interactive
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
   });
 
@@ -85,27 +86,27 @@ describe('Web3 Intelligence Agent', () => {
   describe('Error Handling', () => {
     it('should display error message for invalid query', () => {
       cy.intercept('POST', '/api/web3-agent', { statusCode: 500, body: { error: 'Test error' } });
-      cy.get('input[type="text"]').type('invalid query');
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('invalid query');
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just verify page still works
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should have retry button on error', () => {
       cy.intercept('POST', '/api/web3-agent', { statusCode: 500 });
-      cy.get('input[type="text"]').type('test');
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('test');
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just verify page still works
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
   });
 
   describe('Chat History', () => {
     it('should have chat functionality', () => {
       // Just verify the page has the chat interface
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
   });
 });
@@ -117,35 +118,35 @@ describe('Web3 Agent Query Types', () => {
 
     it('should handle transaction hash queries', () => {
       const txHash = '0x' + '0'.repeat(64);
-      cy.get('input[type="text"]').type(`Analyze transaction ${txHash}`, { timeout: 10000 });
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type(`Analyze transaction ${txHash}`, { timeout: 10000 });
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just check that we can submit
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should handle ENS name resolution', () => {
-      cy.get('input[type="text"]').type('Analyze vitalik.eth', { timeout: 10000 });
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('Analyze vitalik.eth', { timeout: 10000 });
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just check that we can submit
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should handle token holder queries', () => {
-      cy.get('input[type="text"]').type('Show top 10 USDC holders', { timeout: 10000 });
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('Show top 10 USDC holders', { timeout: 10000 });
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just check that we can submit
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 
     it('should handle block queries', () => {
-      cy.get('input[type="text"]').type('What is block 19000000', { timeout: 10000 });
-      cy.get('button[type="submit"]').click();
+      cy.get('input[placeholder*="Ask about blockchain"]').type('What is block 19000000', { timeout: 10000 });
+      cy.contains('button', 'Send').click();
       cy.wait(2000);
       // Just check that we can submit
-      cy.get('input[type="text"]').should('exist');
+      cy.get('input[placeholder*="Ask about blockchain"]').should('exist');
     });
 });
 
