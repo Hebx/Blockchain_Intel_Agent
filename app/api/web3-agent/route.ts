@@ -97,14 +97,14 @@ export async function POST(req: Request) {
             
             // If no token is specified, check if we can derive from the query
             if (!tokenAddress && query.includes('USDC')) {
-              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDC');
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDC') || null;
             } else if (!tokenAddress && query.includes('USDT')) {
-              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDT');
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'USDT') || null;
             } else if (!tokenAddress && query.includes('DAI')) {
-              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'DAI');
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, 'DAI') || null;
             } else if (tokenAddress && !tokenAddress.startsWith('0x')) {
               // Looks like a symbol, try to look it up
-              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, tokenAddress);
+              tokenAddress = await cachedClient.lookupTokenBySymbol(chainId, tokenAddress) || null;
             }
             
             if (tokenAddress) {
