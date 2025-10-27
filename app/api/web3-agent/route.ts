@@ -106,6 +106,14 @@ export async function POST(req: Request) {
       }
     }
 
+    // DEBUG: Log context data
+    console.log('Fetching blockchain data for query type:', parsedQuery.type);
+    console.log('Chain ID:', chainId);
+    console.log('Context data received:', context ? 'Yes' : 'No');
+    if (context && !context.error) {
+      console.log('Context preview:', JSON.stringify(context).substring(0, 200));
+    }
+
     // 8. Build prompt with context
     const promptContext = {
       query,
@@ -115,6 +123,7 @@ export async function POST(req: Request) {
     };
     
     const { prompt, tokenEstimate } = buildOptimizedPrompt(promptContext);
+    console.log('Prompt token estimate:', tokenEstimate);
 
     // 9. Stream AI response
     const result = streamText({
