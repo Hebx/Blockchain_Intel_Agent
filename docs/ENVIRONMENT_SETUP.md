@@ -39,6 +39,23 @@ UPSTASH_REDIS_REST_TOKEN=your_redis_token_here
 
 **Note**: If not provided, the application will use an in-memory cache suitable for development.
 
+### Supabase (Required for Chat Persistence)
+
+For chat history persistence, set up Supabase:
+
+1. Create an account at [Supabase](https://supabase.com/)
+2. Create a new project
+3. Go to Project Settings > API
+4. Copy your Project URL and Anon/Public Key
+5. Run the migration SQL from `lib/db/migrations/001_initial_schema.sql` in the Supabase SQL Editor
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+```
+
+**Note**: If not provided, chat persistence will fall back to browser localStorage only.
+
 ### Node Environment
 
 ```bash
@@ -57,13 +74,21 @@ NODE_ENV=development  # or production
 
    ```bash
    OPENAI_API_KEY=sk-proj-...
+   NEXT_PUBLIC_SUPABASE_URL=https://...
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
    ```
 
 3. For production with Redis:
+
    ```bash
    UPSTASH_REDIS_REST_URL=https://...
    UPSTASH_REDIS_REST_TOKEN=...
    ```
+
+4. Set up Supabase database:
+   - Copy the SQL from `lib/db/migrations/001_initial_schema.sql`
+   - Paste into Supabase SQL Editor
+   - Run the migration
 
 ## Development vs Production
 
@@ -91,6 +116,8 @@ You should see:
 
 - ✅ "Redis credentials not found. Using in-memory cache for development." (development)
 - OR no warning if Redis credentials are set (production)
+- ✅ "Supabase credentials not configured. Chat persistence will fall back to localStorage." (development)
+- OR no warning if Supabase credentials are set (production)
 
 ## Security Notes
 

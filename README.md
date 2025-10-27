@@ -7,11 +7,14 @@ Ask natural language questions about blockchain data and get AI-reasoned insight
 ## 🌟 Features
 
 - **AI-Powered Blockchain Analysis**: Ask natural language questions about on-chain activity
+- **Persistent Chat History**: Cloud-based chat storage with Supabase, syncs across devices
+- **Advanced Analysis Modes**: Full account analysis, DeFi positions, NFT portfolios, transaction tracing
 - **Multi-Layer Caching**: Redis caching for faster responses and reduced API calls
 - **Blockscout MCP Integration**: Real-time blockchain data from multiple chains
 - **Conversational Context**: Maintains conversation history across requests
 - **Rate Limiting**: Built-in protection against API abuse
 - **Multi-Chain Support**: Ethereum, Base, Optimism, Polygon, Arbitrum
+- **Smart Query Parsing**: Natural language understanding with ENS support
 - **Docker Ready**: Easy deployment with Docker and NodeOps
 
 ## 🚀 Quick Start
@@ -20,6 +23,7 @@ Ask natural language questions about blockchain data and get AI-reasoned insight
 
 - Node.js 18+
 - [OpenAI API Key](https://platform.openai.com/api-keys)
+- [Supabase](https://supabase.com/) for chat persistence
 - (Optional) [Upstash Redis](https://console.upstash.com/) for production caching
 
 ### Installation
@@ -43,6 +47,10 @@ Edit `.env.local` and add your credentials:
 
 ```bash
 OPENAI_API_KEY=sk-proj-your-key-here
+
+# Supabase for chat persistence
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 # Optional: Upstash Redis for production caching
 UPSTASH_REDIS_REST_URL=https://...

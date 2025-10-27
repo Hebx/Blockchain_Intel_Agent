@@ -10,16 +10,22 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ChainBadge from '@/components/web3/ChainBadge';
-import { useRouter } from 'next/navigation';
+import ErrorDisplay from '@/components/web3/ErrorDisplay';
+import { LoadingState } from '@/components/web3/LoadingStates';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare } from 'lucide-react';
+import { chatRepository } from '@/lib/db/chat-repository';
+import type { ChatWithMetadata, MessageWithMetadata } from '@/lib/db/chat-repository';
 
 export default function Web3AgentPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [chainId, setChainId] = useState(1);
   const [showSidebar, setShowSidebar] = useState(false);
-  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [chatHistory, setChatHistory] = useState<ChatWithMetadata[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   const inputRef = useRef<HTMLInputElement>(null);
   // Use ref to store current chainId for immediate access in transport
@@ -32,43 +38,101 @@ export default function Web3AgentPage() {
     chainIdRef.current = chainId;
   }, [chainId]);
 
+  // Load chat history on mount
   useEffect(() => {
-    // Generate NEW conversation ID for each page load (new tab = new context)
-    conversationIdRef.current = `conv_${Date.now()}_${Math.random().toString(36)}`;
-    setCurrentChatId(conversationIdRef.current);
-    
-    // Load chat history from localStorage
-    const stored = localStorage.getItem('web3_agent_chats');
-    if (stored) {
+    const loadChatHistory = async () => {
       try {
-        setChatHistory(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse chat history:', e);
+        const chats = await chatRepository.getChats(50, 0);
+        setChatHistory(chats);
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
       }
-    }
+    };
+    
+    loadChatHistory();
   }, []);
 
-  const handleNewChat = () => {
-    // Generate new conversation ID
-    const newChatId = `conv_${Date.now()}_${Math.random().toString(36)}`;
+  // Initialize or load chat from URL params
+  useEffect(() => {
+    const chatId = searchParams.get('chat');
+    
+    if (chatId && chatId !== currentChatId) {
+      // Load an existing chat
+      loadChat(chatId);
+    } else if (!chatId && !currentChatId) {
+      // Create new chat
+      createNewChat();
+    }
+  }, [searchParams]);
+
+  const createNewChat = async () => {
+    const newChatId = `chat_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     conversationIdRef.current = newChatId;
     setCurrentChatId(newChatId);
-    // Clear messages by resetting the page
+    
+    // Don't save to DB until first message is sent
+    router.push('/web3-agent?chat=' + newChatId);
+  };
+
+  const loadChat = async (chatId: string) => {
+    setIsLoading(true);
+    try {
+      conversationIdRef.current = chatId;
+      setCurrentChatId(chatId);
+      
+      // Load chat metadata
+      const chat = await chatRepository.getChat(chatId);
+      if (chat) {
+        setChainId(chat.chain_id);
+      }
+      
+      // Load messages
+      const messages = await chatRepository.getMessages(chatId);
+      if (messages && messages.length > 0) {
+        // Convert to AI SDK format
+        const formattedMessages = messages.map(msg => ({
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content,
+          parts: [{ type: 'text' as const, text: msg.content }],
+        }));
+        
+        // Set messages in useChat
+        if (setMessages) {
+          setMessages(formattedMessages as any);
+        }
+      } else {
+        // Clear messages if no messages found
+        if (setMessages) {
+          setMessages([]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load chat:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleNewChat = () => {
     router.push('/web3-agent');
   };
 
   const handleSelectChat = (chatId: string) => {
-    conversationIdRef.current = chatId;
-    setCurrentChatId(chatId);
-    router.push('/web3-agent');
+    router.push(`/web3-agent?chat=${chatId}`);
   };
 
-  const handleDeleteChat = (chatId: string) => {
-    const updated = chatHistory.filter(c => c.id !== chatId);
-    setChatHistory(updated);
-    localStorage.setItem('web3_agent_chats', JSON.stringify(updated));
-    if (chatId === currentChatId) {
-      handleNewChat();
+  const handleDeleteChat = async (chatId: string) => {
+    try {
+      await chatRepository.deleteChat(chatId);
+      const updated = chatHistory.filter(c => c.id !== chatId);
+      setChatHistory(updated);
+      
+      if (chatId === currentChatId) {
+        router.push('/web3-agent');
+      }
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
     }
   };
 
@@ -92,11 +156,48 @@ export default function Web3AgentPage() {
     });
   }, []); // Empty deps - uses ref for current value
 
-  const { messages, sendMessage, status, error, stop } = useChat({
+  const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     transport: customTransport,
+    onFinish: async ({ message }) => {
+      // Save assistant message to database
+      if (currentChatId) {
+        try {
+          // Extract text content from message parts
+          const textContent = message.parts?.find(p => p.type === 'text')?.text || '';
+          
+          await chatRepository.saveMessage(currentChatId, {
+            role: 'assistant',
+            content: textContent,
+            chain_id: chainId,
+            metadata: {},
+          });
+          
+          // Update chat preview and title
+          const chat = await chatRepository.getChat(currentChatId);
+          if (!chat || chat.title === 'New Chat') {
+            // Generate title from first user message
+            const userMessages = await chatRepository.getMessages(currentChatId);
+            const firstUserMessage = userMessages.find(m => m.role === 'user');
+            if (firstUserMessage && textContent) {
+              const title = firstUserMessage.content.substring(0, 50);
+              await chatRepository.updateChat(currentChatId, {
+                title,
+                preview: textContent.substring(0, 100),
+              });
+              
+              // Reload chat history to reflect update
+              const updatedChats = await chatRepository.getChats(50, 0);
+              setChatHistory(updatedChats);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to save message:', error);
+        }
+      }
+    },
   });
 
-  const handleSubmit = (text: string, submittedChainId: number) => {
+  const handleSubmit = async (text: string, submittedChainId: number) => {
     // Check if query has placeholder that needs to be filled
     if (text.includes('[enter')) {
       alert('Please fill in the required information before submitting');
@@ -106,6 +207,34 @@ export default function Web3AgentPage() {
     // Update both state and ref
     setChainId(submittedChainId);
     chainIdRef.current = submittedChainId;
+    
+    // Ensure we have a chat ID
+    if (!currentChatId) {
+      await createNewChat();
+      // Wait a moment for the chat to be created
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Save user message to database
+    if (currentChatId) {
+      try {
+        // Create chat if it doesn't exist
+        const chat = await chatRepository.getChat(currentChatId);
+        if (!chat) {
+          await chatRepository.createChat('New Chat', null, submittedChainId);
+        }
+        
+        // Save user message
+        await chatRepository.saveMessage(currentChatId, {
+          role: 'user',
+          content: text,
+          chain_id: submittedChainId,
+          metadata: {},
+        });
+      } catch (error) {
+        console.error('Failed to save user message:', error);
+      }
+    }
     
     // Send message immediately - transport will use the updated ref value
     sendMessage({ text });
@@ -124,7 +253,13 @@ export default function Web3AgentPage() {
       {/* Sidebar */}
       {showSidebar && (
         <ChatSidebar
-          chats={chatHistory}
+          chats={chatHistory.map(chat => ({
+            id: chat.id,
+            title: chat.title,
+            preview: chat.preview || '',
+            timestamp: chat.updated_at,
+            chain_id: chat.chain_id,
+          }))}
           currentChatId={currentChatId}
           onNewChat={handleNewChat}
           onSelectChat={handleSelectChat}
@@ -160,7 +295,16 @@ export default function Web3AgentPage() {
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
           <div className="max-w-4xl mx-auto space-y-4">
-          {messages.length === 0 && (
+          {isLoading && (
+            <div className="flex justify-center items-center h-full">
+              <div className="text-center">
+                <Skeleton className="h-12 w-12 mx-auto mb-4" />
+                <p className="text-gray-600">Loading chat...</p>
+              </div>
+            </div>
+          )}
+          
+          {!isLoading && messages.length === 0 && (
             <div className="text-center py-12">
               <div className="mb-8">
                 <h2 className="text-2xl font-bold mb-2">Welcome to Web3 Agent!</h2>
@@ -231,30 +375,21 @@ export default function Web3AgentPage() {
           ))}
 
           {status === 'streaming' && (
-            <div className="flex justify-start">
-              <Card className="max-w-3xl bg-white">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="default">🤖 AI</Badge>
-                    <span className="text-xs text-gray-500">Thinking...</span>
-                  </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-3/4" />
-                    <Skeleton className="h-4 w-5/6" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <LoadingState stage="thinking" message="Analyzing blockchain data..." />
           )}
 
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>
-                <p className="font-semibold mb-1">Error occurred</p>
-                <p className="text-sm">{error.message}</p>
-              </AlertDescription>
-            </Alert>
+            <ErrorDisplay 
+              error={error} 
+              onRetry={() => {
+                // Retry last message
+                const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+                if (lastUserMessage && 'text' in lastUserMessage) {
+                  sendMessage({ text: lastUserMessage.text || '' });
+                }
+              }}
+              showDetails={true}
+            />
           )}
           </div>
         </div>
