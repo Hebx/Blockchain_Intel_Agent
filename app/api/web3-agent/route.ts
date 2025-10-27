@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 
   try {
     // 1. Extract request data
-    const { messages, conversationId, chainId: requestChainId } = await req.json();
+    const { messages, conversationId, chainId: requestChainId, skipCache = false } = await req.json();
     console.log('Received messages:', JSON.stringify(messages, null, 2));
     
     // Extract query - handle multiple message formats
@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     
     console.log('Extracted query:', query);
     console.log('Request chainId:', requestChainId);
+    console.log('Skip cache:', skipCache);
 
     // 2. Rate limiting (10 requests per second)
     const rateLimiter = getRateLimiter();
@@ -57,20 +58,23 @@ export async function POST(req: Request) {
       .digest('hex');
     const aiOutputKey = generateAIOutputCacheKey(queryHash);
 
-    // 5. Check AI output cache  
+    // 5. Check AI output cache (skip if skipCache flag is true)
     const cacheManager = getCacheManager();
-    const cachedOutput = await cacheManager.get(aiOutputKey);
+    let cachedOutput = null;
     
-    if (cachedOutput) {
-      console.log('Cache HIT for AI output');
-      // Return cached response directly as streaming response
-      const result = streamText({
-        model: openai('gpt-4o'),
-        prompt: cachedOutput,
-      });
-      return result.toUIMessageStreamResponse();
+    if (!skipCache) {
+      cachedOutput = await cacheManager.get(aiOutputKey);
+      if (cachedOutput) {
+        console.log('Cache HIT for AI output');
+        // Return cached response directly as streaming response
+        const result = streamText({
+          model: openai('gpt-4o'),
+          prompt: cachedOutput,
+        });
+        return result.toUIMessageStreamResponse();
+      }
     }
-
+    
     console.log('Cache MISS for AI output - fetching data');
 
     // 6. Get conversation history
