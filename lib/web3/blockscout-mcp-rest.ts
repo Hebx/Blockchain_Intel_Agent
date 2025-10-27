@@ -153,6 +153,15 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Get transaction logs (events)
+   * GET /api/v2/transactions/{transaction_hash}/logs
+   */
+  async getTransactionLogs(chainId: number, txHash: string): Promise<any> {
+    const data = await this.makeBlockscoutRequest(chainId, `/api/v2/transactions/${txHash}/logs`);
+    return data;
+  }
+
+  /**
    * Get token transfers by address
    * GET /api/v2/addresses/{address}/token-transfers
    */

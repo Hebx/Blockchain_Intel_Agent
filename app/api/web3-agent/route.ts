@@ -136,10 +136,17 @@ export async function POST(req: Request) {
             break;
           case 'transaction_info':
           case 'transaction_summary':
-          case 'transaction_logs':
             if (parsedQuery.entities.txHash) {
               console.log('Looking up transaction:', parsedQuery.entities.txHash);
               context = await cachedClient.getTransactionInfo(chainId, parsedQuery.entities.txHash);
+            } else {
+              context = { error: 'Transaction hash not provided' };
+            }
+            break;
+          case 'transaction_logs':
+            if (parsedQuery.entities.txHash) {
+              console.log('Looking up transaction logs:', parsedQuery.entities.txHash);
+              context = await cachedClient.getTransactionLogs(chainId, parsedQuery.entities.txHash);
             } else {
               context = { error: 'Transaction hash not provided' };
             }
@@ -160,6 +167,14 @@ export async function POST(req: Request) {
               context = await cachedClient.getNFTTokens(chainId, parsedQuery.entities.address, limit);
             } else {
               context = { error: 'Address not provided' };
+            }
+            break;
+          case 'block_info':
+            if (parsedQuery.entities.block) {
+              console.log('Looking up block:', parsedQuery.entities.block);
+              context = await cachedClient.getBlockInfo(chainId, parsedQuery.entities.block);
+            } else {
+              context = { error: 'Block number or hash not provided' };
             }
             break;
         }

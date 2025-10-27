@@ -161,6 +161,26 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Get transaction logs with caching
+   */
+  async getTransactionLogs(
+    chainId: number = 1,
+    txHash: string,
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('transaction_logs', chainId.toString(), txHash);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getTransactionLogs(chainId, txHash);
+      },
+      CACHE_TTL.CONTRACT_EVENTS, // Same TTL as events
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
    * Get token transfers by address with caching
    */
   async getTokenTransfers(
@@ -221,6 +241,26 @@ export class CachedBlockscoutClient {
         return await this.client.getTransactionsByAddress(chainId, address, ageFrom, ageTo, methods);
       },
       CACHE_TTL.CONTRACT_EVENTS,
+    );
+
+    return this.unwrapResponse(result);
+  }
+
+  /**
+   * Get block info with caching
+   */
+  async getBlockInfo(
+    chainId: number = 1,
+    blockNumberOrHash: string,
+  ): Promise<any> {
+    const cacheKey = generateMCPCacheKey('block_info', chainId.toString(), blockNumberOrHash);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.getBlockInfo(chainId, blockNumberOrHash);
+      },
+      CACHE_TTL.LATEST_BLOCK, // Similar to latest block
     );
 
     return this.unwrapResponse(result);

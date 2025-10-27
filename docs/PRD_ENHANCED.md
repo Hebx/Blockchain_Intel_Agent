@@ -15,6 +15,7 @@
 ### Blockscout MCP Available Tools (What We Can Actually Build With)
 
 **Core Tools Available:**
+
 - `get_address_info` - Address balance, metadata, ENS, contract status
 - `get_tokens_by_address` - ERC20 tokens held by an address
 - `get_transactions_by_address` - Transaction history with filtering
@@ -29,6 +30,7 @@
 - `get_chains_list` - Available chains
 
 **Key Insight**: We can be creative with how we:
+
 1. **Combine multiple API calls** to gather context
 2. **Use AI to interpret** raw blockchain data into narratives
 3. **Detect patterns** across transactions and transfers
@@ -36,6 +38,7 @@
 5. **Generate insights** that aren't explicitly in the API responses
 
 **Example**: Blockscout doesn't have a "wallet behavior analysis" endpoint, but we can:
+
 - Fetch all transactions (`get_transactions_by_address`)
 - Fetch all token transfers (`get_token_transfers_by_address`)
 - Use AI to analyze patterns, categorize activity, detect anomalies, and generate insights
@@ -588,14 +591,16 @@ The enhanced PRD transforms the Web3 AI Agent from a hackathon project into a co
 ## AI Creativity Within Blockscout Constraints
 
 ### What Blockscout API Provides (Raw Data)
+
 ✅ Transaction details  
 ✅ Event logs  
 ✅ Token transfers  
 ✅ Address balances  
 ✅ Block information  
-✅ Contract ABIs  
+✅ Contract ABIs
 
 ### What AI Adds (Intelligent Interpretation)
+
 🧠 **Transaction narratives**: "This was a Uniswap swap of 1 ETH for 3000 USDC"
 🧠 **Pattern detection**: "This wallet typically trades between 2-4 PM EST"
 🧠 **Anomaly identification**: "This transaction is unusual compared to normal activity"
@@ -610,6 +615,7 @@ The enhanced PRD transforms the Web3 AI Agent from a hackathon project into a co
 **Blockscout provides the data, AI provides the insights.**
 
 Every feature in this PRD uses actual Blockscout API endpoints, then adds AI reasoning to:
+
 - Interpret raw blockchain data
 - Detect patterns and anomalies
 - Generate human-readable narratives

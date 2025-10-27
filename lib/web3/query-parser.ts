@@ -138,6 +138,19 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Check for NFT queries (must come before account_summary to avoid false matches)
+  if (/nft|collection|crypto.*punks|bored.*ape|pixel/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    return {
+      type: 'nft_holdings',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
   // Check for account summary queries
   if (
     /account|wallet|address|balance|transactions?/i.test(lowerInput)
@@ -220,19 +233,6 @@ export function parseWeb3Query(input: string): ParsedQuery {
       entities: {
         address: address || undefined,
         token: token || undefined,
-        chain: extractChain(input),
-      },
-      raw: input,
-    };
-  }
-
-  // Check for NFT queries
-  if (/nft|collection|crypto.*punks|bored.*ape|pixel/i.test(lowerInput)) {
-    const address = extractAddress(input);
-    return {
-      type: 'nft_holdings',
-      entities: {
-        address: address || undefined,
         chain: extractChain(input),
       },
       raw: input,

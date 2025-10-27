@@ -9,6 +9,12 @@ import {
   buildTokenAnalysisPrompt,
   buildContractEventsPrompt,
   buildChainHealthPrompt,
+  buildTransactionAnalysisPrompt,
+  buildTokenTransferAnalysisPrompt,
+  buildNFTAnalysisPrompt,
+  buildTransactionLogsPrompt,
+  buildGasAnalysisPrompt,
+  buildBlockInfoPrompt,
 } from '@/lib/web3/prompt-builder';
 import type { Message } from '@/lib/cache/conversation-manager';
 import { parseWeb3Query } from '@/lib/web3/query-parser';
@@ -77,6 +83,47 @@ export function buildOptimizedPrompt(context: PromptContext): {
 
     case 'chain_status':
       prompt = buildChainHealthPrompt(cachedContext || {}, effectiveChainName);
+      break;
+
+    case 'transaction_info':
+    case 'transaction_summary':
+      prompt = buildTransactionAnalysisPrompt(
+        parsedQuery.entities.txHash || '',
+        cachedContext || {},
+        effectiveChainName,
+      );
+      break;
+
+    case 'transaction_logs':
+      prompt = buildTransactionLogsPrompt(
+        parsedQuery.entities.txHash || '',
+        cachedContext || {},
+        effectiveChainName,
+      );
+      break;
+
+    case 'token_transfers':
+      prompt = buildTokenTransferAnalysisPrompt(
+        parsedQuery.entities.address || '',
+        cachedContext || {},
+        effectiveChainName,
+      );
+      break;
+
+    case 'nft_holdings':
+      prompt = buildNFTAnalysisPrompt(
+        parsedQuery.entities.address || '',
+        cachedContext || {},
+        effectiveChainName,
+      );
+      break;
+
+    case 'block_info':
+      prompt = buildBlockInfoPrompt(
+        parsedQuery.entities.block || '',
+        cachedContext || {},
+        effectiveChainName,
+      );
       break;
 
     default:
