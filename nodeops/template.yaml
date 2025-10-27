@@ -14,24 +14,21 @@ containers:
       cpu: "1"
       memory: "2Gi"
     env:
-      - name: VERCEL_AI_KEY
-        value: "${VERCEL_AI_KEY}"
-        required: true
       - name: OPENAI_API_KEY
         value: "${OPENAI_API_KEY}"
-        required: false
-      - name: ANTHROPIC_API_KEY
-        value: "${ANTHROPIC_API_KEY}"
-        required: false
+        required: true
       - name: BLOCKSCOUT_MCP_URL
         value: "https://mcp.blockscout.com"
       - name: DEFAULT_CHAIN
         value: "ethereum"
       - name: NODE_ENV
         value: "production"
-      - name: REDIS_URL
-        value: "${REDIS_URL}"
-        required: false
+      - name: UPSTASH_REDIS_REST_URL
+        value: "${UPSTASH_REDIS_REST_URL}"
+        required: true
+      - name: UPSTASH_REDIS_REST_TOKEN
+        value: "${UPSTASH_REDIS_REST_TOKEN}"
+        required: true
       - name: PORT
         value: "3000"
     health_check:

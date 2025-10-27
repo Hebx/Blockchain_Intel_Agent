@@ -10,31 +10,16 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - VERCEL_AI_KEY=${VERCEL_AI_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - BLOCKSCOUT_MCP_URL=https://mcp.blockscout.com
       - DEFAULT_CHAIN=ethereum
-      - REDIS_URL=redis://redis:6379
+      - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
+      - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
     env_file:
       - .env.local
     volumes:
       - ..:/app
       - /app/node_modules
       - /app/.next
-    depends_on:
-      - redis
     restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: web3-agent-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    restart: unless-stopped
-
-volumes:
-  redis-data:
 
