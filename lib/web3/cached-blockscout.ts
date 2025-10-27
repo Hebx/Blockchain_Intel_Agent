@@ -41,15 +41,24 @@ export class CachedBlockscoutClient {
   async getLatestBlock(chainId: number = 1): Promise<any> {
     const cacheKey = generateMCPCacheKey('latest_block', chainId.toString(), 'latest');
 
-    const result = await this.cache.getOrSet(
-      cacheKey,
-      async () => {
-        return await this.client.getLatestBlock(chainId);
-      },
-      CACHE_TTL.LATEST_BLOCK,
-    );
+    try {
+      const result = await this.cache.getOrSet(
+        cacheKey,
+        async () => {
+          console.log(`Fetching latest block for chainId: ${chainId}`);
+          const block = await this.client.getLatestBlock(chainId);
+          console.log('Latest block data:', JSON.stringify(block).substring(0, 200));
+          return block;
+        },
+        CACHE_TTL.LATEST_BLOCK,
+      );
 
-    return this.unwrapResponse(result);
+      console.log('Returning from cached client, result type:', typeof result);
+      return this.unwrapResponse(result);
+    } catch (error) {
+      console.error('Error in getLatestBlock:', error);
+      throw error;
+    }
   }
 
   /**
