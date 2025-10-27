@@ -128,6 +128,17 @@ export async function POST(req: Request) {
           case 'account_summary':
             if (parsedQuery.entities.address) {
               context = await cachedClient.getAddressInfo(chainId, parsedQuery.entities.address);
+            } else if (parsedQuery.entities.ensName) {
+              // Resolve ENS name to address first
+              const resolvedAddress = await cachedClient.resolveENS(parsedQuery.entities.ensName);
+              if (resolvedAddress) {
+                console.log(`Resolved ENS ${parsedQuery.entities.ensName} to ${resolvedAddress}`);
+                context = await cachedClient.getAddressInfo(chainId, resolvedAddress);
+                // Add ENS info to context for AI to see
+                context = { ...context, ensName: parsedQuery.entities.ensName, resolvedAddress };
+              } else {
+                context = { error: `Could not resolve ENS name: ${parsedQuery.entities.ensName}` };
+              }
             }
             break;
           case 'contract_events':

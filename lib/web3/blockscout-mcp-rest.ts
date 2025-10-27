@@ -263,6 +263,54 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Resolve ENS name to address
+   * Note: Currently only supported on Ethereum mainnet
+   */
+  async resolveENS(name: string): Promise<string | null> {
+    // Only Ethereum mainnet supports ENS
+    if (!name.endsWith('.eth')) {
+      return null;
+    }
+
+    try {
+      // Try to search for the ENS name in Blockscout
+      const data = await this.makeBlockscoutRequest(1, `/api/v2/search?q=${encodeURIComponent(name)}`);
+      
+      // Blockscout search returns address info if ENS is resolved
+      if (data && data.items && data.items.length > 0) {
+        const firstItem = data.items[0];
+        if (firstItem.type === 'address' || firstItem.address) {
+          return firstItem.address;
+        }
+      }
+    } catch (error) {
+      console.error('Failed to resolve ENS:', error);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Reverse resolve address to ENS name
+   * Note: Currently only supported on Ethereum mainnet
+   */
+  async reverseResolve(address: string): Promise<string | null> {
+    // Only Ethereum mainnet supports ENS reverse resolution
+    try {
+      const addressInfo = await this.makeBlockscoutRequest(1, `/api/v2/addresses/${address}`);
+      
+      // Check if address has a name tag (ENS)
+      if (addressInfo && addressInfo.name && addressInfo.name.endsWith('.eth')) {
+        return addressInfo.name;
+      }
+    } catch (error) {
+      console.error('Failed to reverse resolve ENS:', error);
+    }
+    
+    return null;
+  }
+
+  /**
    * Get chain list - returns chain info for the configured chains
    */
   async getChainsList(): Promise<any> {

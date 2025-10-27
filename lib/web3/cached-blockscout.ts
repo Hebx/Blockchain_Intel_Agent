@@ -318,6 +318,40 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Resolve ENS name to address
+   */
+  async resolveENS(name: string): Promise<string | null> {
+    const cacheKey = generateMCPCacheKey('ens_resolution', 'ethereum', name);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.resolveENS(name);
+      },
+      3600, // Cache ENS resolutions for 1 hour
+    );
+
+    return result;
+  }
+
+  /**
+   * Reverse resolve address to ENS name
+   */
+  async reverseResolve(address: string): Promise<string | null> {
+    const cacheKey = generateMCPCacheKey('ens_reverse', 'ethereum', address);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.reverseResolve(address);
+      },
+      3600, // Cache reverse resolutions for 1 hour
+    );
+
+    return result;
+  }
+
+  /**
    * Close MCP client connection
    */
   async close(): Promise<void> {

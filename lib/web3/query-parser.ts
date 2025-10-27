@@ -242,15 +242,20 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Check for ENS name - if present and no direct address, use it for queries
+  const ensName = extractENSName(input);
+  
   // Check for account summary queries
   if (
     /account|wallet|address|balance|transactions?/i.test(lowerInput)
   ) {
     const address = extractAddress(input);
+    
     return {
       type: 'account_summary',
       entities: {
         address: address || undefined,
+        ensName: ensName || undefined,
         chain: extractChain(input),
       },
       raw: input,
