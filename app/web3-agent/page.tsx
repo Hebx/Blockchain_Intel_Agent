@@ -3,18 +3,24 @@
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
 import ChatInput from '@/components/chat-input';
+import ChatSidebar from '@/components/web3/ChatSidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ChainBadge from '@/components/web3/ChainBadge';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { ChevronLeft, Sparkles, TrendingUp, Wallet, Coins } from 'lucide-react';
+import { ChevronLeft, Sparkles, TrendingUp, Wallet, Coins, MessageSquare } from 'lucide-react';
 
 export default function Web3AgentPage() {
+  const router = useRouter();
   const [chainId, setChainId] = useState(1);
+  const [showSidebar, setShowSidebar] = useState(false);
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  
   const inputRef = useRef<HTMLInputElement>(null);
   // Use ref to store current chainId for immediate access in transport
   const chainIdRef = useRef(1);
@@ -32,13 +38,56 @@ export default function Web3AgentPage() {
       const stored = sessionStorage.getItem('web3_agent_conversation_id');
       if (stored) {
         conversationIdRef.current = stored;
+        setCurrentChatId(stored);
       } else {
         // Generate new conversation ID
         conversationIdRef.current = `conv_${Date.now()}_${Math.random().toString(36)}`;
         sessionStorage.setItem('web3_agent_conversation_id', conversationIdRef.current);
+        setCurrentChatId(conversationIdRef.current);
+      }
+    }
+    
+    // Load chat history from localStorage
+    const stored = localStorage.getItem('web3_agent_chats');
+    if (stored) {
+      try {
+        setChatHistory(JSON.parse(stored));
+      } catch (e) {
+        console.error('Failed to parse chat history:', e);
       }
     }
   }, []);
+
+  const handleNewChat = () => {
+    // Generate new conversation ID
+    const newChatId = `conv_${Date.now()}_${Math.random().toString(36)}`;
+    conversationIdRef.current = newChatId;
+    setCurrentChatId(newChatId);
+    sessionStorage.setItem('web3_agent_conversation_id', newChatId);
+    // Clear messages by resetting the page
+    router.push('/web3-agent');
+  };
+
+  const handleSelectChat = (chatId: string) => {
+    conversationIdRef.current = chatId;
+    setCurrentChatId(chatId);
+    sessionStorage.setItem('web3_agent_conversation_id', chatId);
+    router.push('/web3-agent');
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    const updated = chatHistory.filter(c => c.id !== chatId);
+    setChatHistory(updated);
+    localStorage.setItem('web3_agent_chats', JSON.stringify(updated));
+    if (chatId === currentChatId) {
+      handleNewChat();
+    }
+  };
+
+  const handleBackClick = () => {
+    // Just refresh the page to show welcome screen
+    router.push('/web3-agent');
+  };
 
   // Create custom transport that modifies the fetch to include chainId
   // Use ref to get current chainId without memoization dependency
@@ -88,31 +137,54 @@ export default function Web3AgentPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <header className="border-b p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+    <div className="flex h-screen">
+      {/* Sidebar */}
+      {showSidebar && (
+        <ChatSidebar
+          chats={chatHistory}
+          currentChatId={currentChatId}
+          onNewChat={handleNewChat}
+          onSelectChat={handleSelectChat}
+          onDeleteChat={handleDeleteChat}
+        />
+      )}
+      
+      <div className="flex flex-col flex-1 h-screen">
+        {/* Header */}
+        <header className="border-b p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-white hover:bg-white/20"
+                onClick={() => setShowSidebar(!showSidebar)}
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-white hover:bg-white/20"
+                onClick={handleBackClick}
+              >
                 <ChevronLeft className="h-5 w-5" />
               </Button>
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <Sparkles className="h-6 w-6" />
-                Web3 Intelligence Agent
-              </h1>
-              <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+              <div>
+                <h1 className="text-2xl font-bold flex items-center gap-2">
+                  <Sparkles className="h-6 w-6" />
+                  Web3 Intelligence Agent
+                </h1>
+                <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+              </div>
             </div>
+            <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
           </div>
-          <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
-        </div>
-      </header>
+        </header>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-4">
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+          <div className="max-w-4xl mx-auto space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-12">
               <div className="mb-8">
@@ -209,18 +281,21 @@ export default function Web3AgentPage() {
               </AlertDescription>
             </Alert>
           )}
+          </div>
         </div>
-      </div>
 
-      {/* Input */}
-      <div className="border-t bg-white p-4">
-        <div className="max-w-4xl mx-auto">
-          <ChatInput
-            ref={inputRef}
-            status={status === 'streaming' ? 'streaming' : 'idle'}
-            onSubmit={handleSubmit}
-            stop={stop}
-          />
+        {/* Input */}
+        <div className="border-t bg-white p-4">
+          <div className="max-w-4xl mx-auto">
+            <ChatInput
+              ref={inputRef}
+              status={status === 'streaming' ? 'streaming' : 'idle'}
+              onSubmit={handleSubmit}
+              stop={stop}
+              chainId={chainId}
+              onChainChange={setChainId}
+            />
+          </div>
         </div>
       </div>
     </div>

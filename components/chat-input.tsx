@@ -9,12 +9,24 @@ interface ChatInputProps {
   status: string;
   onSubmit: (text: string, chainId: number) => void;
   stop?: () => void;
+  chainId?: number;
+  onChainChange?: (chainId: number) => void;
 }
 
 const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
-  ({ status, onSubmit, stop }, ref) => {
+  ({ status, onSubmit, stop, chainId: externalChainId, onChainChange }, ref) => {
     const [text, setText] = useState('');
-    const [chainId, setChainId] = useState(1);
+    // Use external chainId if provided, otherwise use internal state
+    const [internalChainId, setInternalChainId] = useState(1);
+    const chainId = externalChainId ?? internalChainId;
+    
+    const handleChainChange = (newChainId: number) => {
+      if (onChainChange) {
+        onChainChange(newChainId);
+      } else {
+        setInternalChainId(newChainId);
+      }
+    };
 
     return (
       <form
@@ -30,7 +42,7 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
             <Tooltip>
               <TooltipTrigger asChild>
                 <div>
-                  <ChainSelector value={chainId} onValueChange={setChainId} />
+                  <ChainSelector value={chainId} onValueChange={handleChainChange} />
                 </div>
               </TooltipTrigger>
               <TooltipContent>
