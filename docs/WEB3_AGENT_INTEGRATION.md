@@ -2,11 +2,12 @@
 
 ## Overview
 
-The Web3 AI Agent has been enhanced with comprehensive system instructions from three key documentation files:
+The Web3 AI Agent has been enhanced with comprehensive system instructions from four key documentation files:
 
 1. **instruction.md** - Core agent instructions and reasoning rules
 2. **action-tool.description.md** - Complete Blockscout MCP tool descriptions
 3. **direct-call-endpoint-list.md** - Advanced API endpoint reference
+4. **openai-api.yaml** - OpenAPI specification with parameter details and response structures
 
 ## Implementation Details
 
@@ -24,7 +25,26 @@ The agent now uses comprehensive system instructions stored in `lib/web3/system-
 
 ### Available Tools
 
-The agent has access to the following Blockscout MCP tools:
+The agent has access to the following Blockscout MCP tools with detailed parameter information from the OpenAPI specification:
+
+#### Enhanced Tool Parameter Documentation
+
+**Time-Based Filtering (for transaction/transfer tools)**:
+- `age_from`: Start date/time (ISO 8601 format, e.g., "2024-01-01T00:00:00Z")
+- `age_to`: End date/time (ISO 8601 format)
+- `cursor`: Pagination cursor from previous response
+
+**Transaction Filtering**:
+- `methods`: Method signature to filter transactions (e.g., "0x304e6ade")
+- `include_transactions`: Include transaction hash list in block info
+
+**Contract Reading**:
+- `abi`: JSON string of specific function ABI
+- `function_name`: Symbolic name matching ABI
+- `args`: JSON string array of arguments
+- `block`: Block identifier (number or "latest")
+
+#### Available MCP Tools
 
 #### Core Query Tools
 - `get_chains_list` - Get supported blockchain chains
