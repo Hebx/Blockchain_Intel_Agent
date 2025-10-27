@@ -17,18 +17,39 @@ export class CachedBlockscoutClient {
   }
 
   /**
+   * Helper to unwrap MCP response data
+   */
+  private unwrapResponse(response: any): any {
+    // If response has metadata wrapper, extract just the data
+    if (response && typeof response === 'object' && 'data' in response && 'metadata' in response) {
+      return response.data;
+    }
+    // If response has items array (from Blockscout API v2), return as is
+    if (Array.isArray(response)) {
+      return response;
+    }
+    // If response has items field, return it
+    if (response && typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
+      return response.items;
+    }
+    return response;
+  }
+
+  /**
    * Get latest block with caching
    */
   async getLatestBlock(chainId: number = 1): Promise<any> {
     const cacheKey = generateMCPCacheKey('latest_block', chainId.toString(), 'latest');
 
-    return await this.cache.getOrSet(
+    const result = await this.cache.getOrSet(
       cacheKey,
       async () => {
         return await this.client.getLatestBlock(chainId);
       },
       CACHE_TTL.LATEST_BLOCK,
     );
+
+    return this.unwrapResponse(result);
   }
 
   /**
@@ -41,13 +62,15 @@ export class CachedBlockscoutClient {
   ): Promise<any> {
     const cacheKey = generateMCPCacheKey('tokens_by_address', chainId.toString(), `${address}${cursor || ''}`);
 
-    return await this.cache.getOrSet(
+    const result = await this.cache.getOrSet(
       cacheKey,
       async () => {
         return await this.client.getTokensByAddress(chainId, address, cursor);
       },
       CACHE_TTL.TOKEN_HOLDERS,
     );
+
+    return this.unwrapResponse(result);
   }
 
   /**
@@ -59,13 +82,15 @@ export class CachedBlockscoutClient {
   ): Promise<any> {
     const cacheKey = generateMCPCacheKey('address_info', chainId.toString(), address);
 
-    return await this.cache.getOrSet(
+    const result = await this.cache.getOrSet(
       cacheKey,
       async () => {
         return await this.client.getAddressInfo(chainId, address);
       },
       CACHE_TTL.ACCOUNT_SUMMARY,
     );
+
+    return this.unwrapResponse(result);
   }
 
   /**
@@ -81,13 +106,15 @@ export class CachedBlockscoutClient {
     const params = `${address}${ageFrom || ''}${ageTo || ''}${methods?.join(',') || ''}`;
     const cacheKey = generateMCPCacheKey('transactions_by_address', chainId.toString(), params);
 
-    return await this.cache.getOrSet(
+    const result = await this.cache.getOrSet(
       cacheKey,
       async () => {
         return await this.client.getTransactionsByAddress(chainId, address, ageFrom, ageTo, methods);
       },
       CACHE_TTL.CONTRACT_EVENTS,
     );
+
+    return this.unwrapResponse(result);
   }
 
   /**
@@ -96,19 +123,22 @@ export class CachedBlockscoutClient {
   async getChainHealth(chainId: number = 1): Promise<any> {
     const cacheKey = generateMCPCacheKey('chain_status', chainId.toString(), 'health');
 
-    return await this.cache.getOrSet(
+    const result = await this.cache.getOrSet(
       cacheKey,
       async () => {
         const latestBlock = await this.client.getLatestBlock(chainId);
+        const blockData = this.unwrapResponse(latestBlock);
         return {
           chainId,
-          latestBlock: latestBlock?.number || 'unknown',
-          timestamp: latestBlock?.timestamp || null,
+          latestBlock: blockData?.number || 'unknown',
+          timestamp: blockData?.timestamp || null,
           health: 'operational',
         };
       },
       CACHE_TTL.CHAIN_STATUS,
     );
+
+    return result;
   }
 
   /**
