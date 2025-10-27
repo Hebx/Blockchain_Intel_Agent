@@ -182,6 +182,135 @@ export async function POST(req: Request) {
               context = { error: 'Block number or hash not provided' };
             }
             break;
+          
+          // Advanced analysis types - multi-step data fetching
+          case 'full_account_analysis':
+            if (parsedQuery.entities.address) {
+              console.log('Performing full account analysis for:', parsedQuery.entities.address);
+              
+              // Fetch comprehensive account data
+              const [accountInfo, transactions, tokenTransfers, tokens, nfts] = await Promise.all([
+                cachedClient.getAddressInfo(chainId, parsedQuery.entities.address),
+                cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 100),
+                cachedClient.getTokenTransfers(chainId, parsedQuery.entities.address, 100),
+                cachedClient.getTokensByAddress(chainId, parsedQuery.entities.address),
+                cachedClient.getNFTTokens(chainId, parsedQuery.entities.address, 50),
+              ]);
+              
+              context = {
+                accountInfo,
+                transactions: transactions?.transactions || [],
+                tokenTransfers: tokenTransfers?.transfers || [],
+                tokens: tokens?.tokens || [],
+                nfts: nfts?.tokens || [],
+              };
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
+          
+          case 'chain_of_custody':
+            if (parsedQuery.entities.address) {
+              console.log('Tracing chain of custody for:', parsedQuery.entities.address);
+              
+              // Get transaction history and token transfers for flow analysis
+              const [transactions, tokenTransfers] = await Promise.all([
+                cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 200),
+                cachedClient.getTokenTransfers(chainId, parsedQuery.entities.address, 200),
+              ]);
+              
+              context = {
+                transactions: transactions?.transactions || [],
+                tokenTransfers: tokenTransfers?.transfers || [],
+              };
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
+          
+          case 'defi_analysis':
+            if (parsedQuery.entities.address) {
+              console.log('Analyzing DeFi positions for:', parsedQuery.entities.address);
+              
+              // Get DeFi-relevant data
+              const [accountInfo, transactions, tokenTransfers, tokens] = await Promise.all([
+                cachedClient.getAddressInfo(chainId, parsedQuery.entities.address),
+                cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 150),
+                cachedClient.getTokenTransfers(chainId, parsedQuery.entities.address, 150),
+                cachedClient.getTokensByAddress(chainId, parsedQuery.entities.address),
+              ]);
+              
+              context = {
+                accountInfo,
+                transactions: transactions?.transactions || [],
+                tokenTransfers: tokenTransfers?.transfers || [],
+                tokens: tokens?.tokens || [],
+              };
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
+          
+          case 'nft_portfolio_analysis':
+            if (parsedQuery.entities.address) {
+              console.log('Analyzing NFT portfolio for:', parsedQuery.entities.address);
+              
+              // Get NFT-specific data
+              const [accountInfo, nfts, transactions] = await Promise.all([
+                cachedClient.getAddressInfo(chainId, parsedQuery.entities.address),
+                cachedClient.getNFTTokens(chainId, parsedQuery.entities.address, 100),
+                cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 100),
+              ]);
+              
+              context = {
+                accountInfo,
+                nfts: nfts?.tokens || [],
+                transactions: transactions?.transactions || [],
+              };
+            } else {
+              context = { error: 'Address not provided' };
+            }
+            break;
+          
+          case 'transaction_flow_analysis':
+            if (parsedQuery.entities.txHash) {
+              console.log('Analyzing transaction flow for:', parsedQuery.entities.txHash);
+              
+              // Get detailed transaction data including logs
+              const [txInfo, txLogs] = await Promise.all([
+                cachedClient.getTransactionInfo(chainId, parsedQuery.entities.txHash),
+                cachedClient.getTransactionLogs(chainId, parsedQuery.entities.txHash),
+              ]);
+              
+              context = {
+                transaction: txInfo,
+                logs: txLogs?.events || [],
+              };
+            } else {
+              context = { error: 'Transaction hash not provided' };
+            }
+            break;
+          
+          case 'multi_address_analysis':
+            if (parsedQuery.entities.multipleAddresses && parsedQuery.entities.multipleAddresses.length >= 2) {
+              console.log('Comparing multiple addresses:', parsedQuery.entities.multipleAddresses);
+              
+              // Fetch data for all addresses
+              const addressData = await Promise.all(
+                parsedQuery.entities.multipleAddresses.map(async (addr) => {
+                  const [info, txns] = await Promise.all([
+                    cachedClient.getAddressInfo(chainId, addr),
+                    cachedClient.getTransactionsByAddress(chainId, addr, 50),
+                  ]);
+                  return { address: addr, info, transactions: txns?.transactions || [] };
+                })
+              );
+              
+              context = { addresses: addressData };
+            } else {
+              context = { error: 'At least 2 addresses required for comparison' };
+            }
+            break;
         }
       } catch (error) {
         console.error('Error fetching blockchain data:', error);
