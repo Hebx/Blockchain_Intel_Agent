@@ -34,6 +34,14 @@ export default function Web3AgentPage() {
   // Generate or retrieve conversation ID from session
   const conversationIdRef = useRef<string | null>(null);
 
+  // Initialize conversationId immediately on mount
+  useEffect(() => {
+    if (!conversationIdRef.current) {
+      const initialChatId = `chat_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+      conversationIdRef.current = initialChatId;
+    }
+  }, []);
+
   useEffect(() => {
     // Sync chainId with ref whenever it changes
     chainIdRef.current = chainId;
@@ -62,10 +70,10 @@ export default function Web3AgentPage() {
       // Load an existing chat
       loadChat(chatId);
     } else if (!chatId && !currentChatId) {
-      // Create new chat
+      // Create new chat immediately
       createNewChat();
     }
-  }, [searchParams]);
+  }, [searchParams, currentChatId]);
 
   const createNewChat = async () => {
     const newChatId = `chat_${Date.now()}_${Math.random().toString(36).substring(7)}`;
@@ -131,7 +139,12 @@ export default function Web3AgentPage() {
         if (init?.body && typeof init.body === 'string') {
           try {
             const bodyData = JSON.parse(init.body);
-            init.body = JSON.stringify({ ...bodyData, chainId: chainIdRef.current, skipCache });
+            init.body = JSON.stringify({ 
+              ...bodyData, 
+              chainId: chainIdRef.current, 
+              skipCache,
+              conversationId: conversationIdRef.current 
+            });
           } catch (e) {
             // If parsing fails, just use original body
           }
@@ -142,6 +155,7 @@ export default function Web3AgentPage() {
   }, [skipCache]); // Include skipCache in deps
 
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
+    id: currentChatId || undefined,
     transport: customTransport,
     onFinish: async ({ message }) => {
       // Save assistant message to database
@@ -503,7 +517,7 @@ export default function Web3AgentPage() {
           <div className="max-w-4xl mx-auto">
             <ChatInput
               ref={inputRef}
-              status={status === 'streaming' ? 'streaming' : 'idle'}
+              status={status}
               onSubmit={handleSubmit}
               stop={stop}
               chainId={chainId}
