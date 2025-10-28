@@ -371,6 +371,48 @@ export function parseWeb3Query(input: string): ParsedQuery {
     };
   }
 
+  // Check for transaction queries FIRST (must be before address extraction to avoid false matches)
+  const txHashRegex = /0x[a-fA-F0-9]{64}/;
+  const txHashMatch = input.match(txHashRegex);
+  
+  if (txHashMatch && input.length < 200) {
+    // If the query contains a 64-character hex string (tx hash) and isn't too long, treat as transaction query
+    const txHash = txHashMatch[0];
+    
+    // Check for specific transaction query types
+    if (/summary|explain|what happened|tell me.*about/i.test(lowerInput)) {
+      return {
+        type: 'transaction_summary',
+        entities: {
+          txHash,
+          chain: extractChain(input),
+        },
+        raw: input,
+      };
+    }
+    
+    if (/logs|events/i.test(lowerInput)) {
+      return {
+        type: 'transaction_logs',
+        entities: {
+          txHash,
+          chain: extractChain(input),
+        },
+        raw: input,
+      };
+    }
+    
+    // Default to detailed transaction info
+    return {
+      type: 'transaction_info',
+      entities: {
+        txHash,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
   // Check for ENS name - if present and no direct address, use it for queries
   const ensName = extractENSName(input);
   
@@ -398,47 +440,6 @@ export function parseWeb3Query(input: string): ParsedQuery {
     return {
       type: 'chain_status',
       entities: {
-        chain: extractChain(input),
-      },
-      raw: input,
-    };
-  }
-
-  // Check for transaction queries
-  const txHashRegex = /0x[a-fA-F0-9]{64}/;
-  const txHashMatch = input.match(txHashRegex);
-  
-  if (txHashMatch) {
-    const txHash = txHashMatch[0];
-    
-    // Check for specific transaction query types
-    if (/summary|explain|what happened/i.test(lowerInput)) {
-      return {
-        type: 'transaction_summary',
-        entities: {
-          txHash,
-          chain: extractChain(input),
-        },
-        raw: input,
-      };
-    }
-    
-    if (/logs|events/i.test(lowerInput)) {
-      return {
-        type: 'transaction_logs',
-        entities: {
-          txHash,
-          chain: extractChain(input),
-        },
-        raw: input,
-      };
-    }
-    
-    // Default to detailed transaction info
-    return {
-      type: 'transaction_info',
-      entities: {
-        txHash,
         chain: extractChain(input),
       },
       raw: input,

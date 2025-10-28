@@ -75,6 +75,7 @@ export default function Web3AgentPage() {
     router.push('/web3-agent?chat=' + newChatId);
   };
 
+  // Define loadChat but don't use setMessages yet - will be called later
   const loadChat = async (chatId: string) => {
     setIsLoading(true);
     try {
@@ -86,22 +87,7 @@ export default function Web3AgentPage() {
       if (chat) {
         setChainId(chat.chain_id);
       }
-      
-      // Load messages from database and populate chat
-      const dbMessages = await chatRepository.getMessages(chatId);
-      if (dbMessages && dbMessages.length > 0 && setMessages) {
-        // Convert to AI SDK format
-        const formattedMessages = dbMessages.map(msg => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-          parts: [{ type: 'text' as const, text: msg.content }],
-        }));
-        
-        setMessages(formattedMessages);
-      } else if (setMessages) {
-        setMessages([]);
-      }
+      // Messages will be loaded after useChat hook initializes
     } catch (error) {
       console.error('Failed to load chat:', error);
     } finally {
