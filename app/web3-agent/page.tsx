@@ -52,6 +52,7 @@ export default function Web3AgentPage() {
     loadChatHistory();
   }, []);
 
+
   // Initialize or load chat from URL params
   useEffect(() => {
     const chatId = searchParams.get('chat');
@@ -86,26 +87,20 @@ export default function Web3AgentPage() {
         setChainId(chat.chain_id);
       }
       
-      // Load messages
-      const messages = await chatRepository.getMessages(chatId);
-      if (messages && messages.length > 0) {
+      // Load messages from database and populate chat
+      const dbMessages = await chatRepository.getMessages(chatId);
+      if (dbMessages && dbMessages.length > 0 && setMessages) {
         // Convert to AI SDK format
-        const formattedMessages = messages.map(msg => ({
+        const formattedMessages = dbMessages.map(msg => ({
           id: msg.id,
           role: msg.role as 'user' | 'assistant',
           content: msg.content,
           parts: [{ type: 'text' as const, text: msg.content }],
         }));
         
-        // Set messages in useChat
-        if (setMessages) {
-          setMessages(formattedMessages as any);
-        }
-      } else {
-        // Clear messages if no messages found
-        if (setMessages) {
-          setMessages([]);
-        }
+        setMessages(formattedMessages);
+      } else if (setMessages) {
+        setMessages([]);
       }
     } catch (error) {
       console.error('Failed to load chat:', error);
@@ -160,6 +155,7 @@ export default function Web3AgentPage() {
 
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     transport: customTransport,
+    initialMessages: [],
     onFinish: async ({ message }) => {
       // Save assistant message to database
       if (currentChatId) {

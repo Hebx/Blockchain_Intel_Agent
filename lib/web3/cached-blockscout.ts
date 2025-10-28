@@ -269,11 +269,13 @@ export class CachedBlockscoutClient {
   async getTransactionsByAddress(
     chainId: number = 1,
     address: string,
+    limit?: number | string,
     ageFrom?: string,
     ageTo?: string,
     methods?: string[],
   ): Promise<any> {
-    const params = `${address}${ageFrom || ''}${ageTo || ''}${methods?.join(',') || ''}`;
+    const limitNum = typeof limit === 'string' ? parseInt(limit) : limit || 50;
+    const params = `${address}${limitNum}${ageFrom || ''}${ageTo || ''}${methods?.join(',') || ''}`;
     const cacheKey = generateMCPCacheKey('transactions_by_address', chainId.toString(), params);
 
     const result = await this.cache.getOrSet(
@@ -284,7 +286,12 @@ export class CachedBlockscoutClient {
       CACHE_TTL.CONTRACT_EVENTS,
     );
 
-    return this.unwrapResponse(result);
+    const data = this.unwrapResponse(result);
+    // Limit results if requested (client doesn't support limit, so we do it here)
+    if (limitNum && data?.items && Array.isArray(data.items)) {
+      return { ...data, items: data.items.slice(0, limitNum) };
+    }
+    return data;
   }
 
   /**
@@ -430,6 +437,28 @@ export class CachedBlockscoutClient {
     );
 
     return result;
+  }
+
+  /**
+   * Make a direct API call to Blockscout endpoint
+   */
+  async directApiCall(
+    chainId: number = 1,
+    endpoint: string,
+    queryParams?: Record<string, any>
+  ): Promise<any> {
+    const params = queryParams ? JSON.stringify(queryParams) : '';
+    const cacheKey = generateMCPCacheKey('direct_api', chainId.toString(), `${endpoint}${params}`);
+
+    const result = await this.cache.getOrSet(
+      cacheKey,
+      async () => {
+        return await this.client.directApiCall(chainId, endpoint, queryParams);
+      },
+      CACHE_TTL.ACCOUNT_SUMMARY, // Cache for 1 minute
+    );
+
+    return this.unwrapResponse(result);
   }
 
   /**

@@ -92,6 +92,9 @@ export async function POST(req: Request) {
       optimism: 10,
       polygon: 137,
       arbitrum: 42161,
+      gnosis: 100,
+      redstone: 901,
+      kinto: 7887,
     };
     
     // Use provided chainId from request, fall back to parsed query chain, then default to ethereum
@@ -143,12 +146,16 @@ export async function POST(req: Request) {
               } else {
                 context = { error: `Could not resolve ENS name: ${parsedQuery.entities.ensName}` };
               }
+            } else {
+              context = { error: 'Address or ENS name required for account summary' };
             }
             break;
           case 'contract_events':
             if (parsedQuery.entities.address) {
               // Use getTransactionsByAddress for contract interactions
-              context = await cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address);
+              context = await cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, parsedQuery.entities.limit);
+            } else {
+              context = { error: 'Address required for contract events query' };
             }
             break;
           case 'chain_status':
@@ -339,6 +346,95 @@ export async function POST(req: Request) {
               context = { addresses: addressData };
             } else {
               context = { error: 'At least 2 addresses required for comparison' };
+            }
+            break;
+          
+          case 'token_approval':
+            // Token approval queries need contract inspection
+            if (parsedQuery.entities.address || parsedQuery.entities.ensName) {
+              // First resolve ENS if needed
+              let resolvedAddress = parsedQuery.entities.address;
+              if (parsedQuery.entities.ensName && !resolvedAddress) {
+                const ensResolved = await cachedClient.resolveENS(parsedQuery.entities.ensName);
+                resolvedAddress = ensResolved || undefined;
+              }
+              
+              if (resolvedAddress) {
+                // Get transactions for the address to find approval events
+                context = await cachedClient.getTransactionsByAddress(chainId, resolvedAddress, 100);
+              } else {
+                context = { error: 'Address or ENS name required for approval query' };
+              }
+            } else {
+              context = { error: 'Address or ENS name required for approval query' };
+            }
+            break;
+          
+          case 'gas_fee_calculation':
+            if (parsedQuery.entities.address) {
+              // Get all transactions for the address
+              context = await cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 1000);
+            } else {
+              context = { error: 'Address required for gas fee calculation' };
+            }
+            break;
+          
+          case 'contract_inspection':
+            if (parsedQuery.entities.address) {
+              // Get contract info and ABI
+              const [addressInfo, abi] = await Promise.all([
+                cachedClient.getAddressInfo(chainId, parsedQuery.entities.address),
+                cachedClient.getContractABI(chainId, parsedQuery.entities.address).catch(() => null),
+              ]);
+              
+              context = {
+                addressInfo,
+                abi,
+              };
+            } else {
+              context = { error: 'Contract address required for inspection' };
+            }
+            break;
+          
+          case 'event_search':
+            if (parsedQuery.entities.address) {
+              // Get transaction logs for the address
+              const transactions = await cachedClient.getTransactionsByAddress(chainId, parsedQuery.entities.address, 100);
+              
+              // Get logs for those transactions
+              const transactionHashes = transactions?.transactions?.map((tx: any) => tx.hash) || [];
+              
+              const logs = await Promise.all(
+                transactionHashes.slice(0, 10).map(async (hash: string) => {
+                  try {
+                    return await cachedClient.getTransactionLogs(chainId, hash);
+                  } catch (e) {
+                    return null;
+                  }
+                })
+              );
+              
+              context = {
+                transactions: transactions?.transactions || [],
+                logs: logs.filter(l => l !== null),
+              };
+            } else {
+              context = { error: 'Address required for event search' };
+            }
+            break;
+          
+          case 'cross_chain_message':
+            // Use direct API call for cross-chain messages
+            try {
+              if (chainId === 42161) { // Arbitrum
+                context = await cachedClient.directApiCall(chainId, '/api/v2/arbitrum/messages/from-rollup', {});
+              } else if (chainId === 10) { // Optimism
+                context = await cachedClient.directApiCall(chainId, '/api/v2/optimism/withdrawals', {});
+              } else {
+                context = { error: 'Cross-chain messages not supported for this chain' };
+              }
+            } catch (error) {
+              context = { error: 'Failed to fetch cross-chain messages' };
             }
             break;
         }

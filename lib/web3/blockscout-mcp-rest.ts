@@ -442,6 +442,29 @@ export class BlockscoutRestClient {
   }
 
   /**
+   * Make a direct API call to Blockscout endpoint
+   * This allows calling any Blockscout API endpoint with optional query parameters
+   */
+  async directApiCall(
+    chainId: number,
+    endpoint: string,
+    queryParams?: Record<string, any>
+  ): Promise<any> {
+    let fullEndpoint = endpoint;
+    
+    // Add query parameters if provided
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      const queryString = new URLSearchParams();
+      for (const [key, value] of Object.entries(queryParams)) {
+        queryString.append(key, String(value));
+      }
+      fullEndpoint = `${endpoint}?${queryString.toString()}`;
+    }
+    
+    return await this.makeBlockscoutRequest(chainId, fullEndpoint);
+  }
+
+  /**
    * Dummy close method for compatibility
    */
   async close(): Promise<void> {

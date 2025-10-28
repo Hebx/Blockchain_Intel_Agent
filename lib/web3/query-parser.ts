@@ -38,6 +38,11 @@ export type QueryType =
   | 'nft_portfolio_analysis'
   | 'transaction_flow_analysis'
   | 'multi_address_analysis'
+  | 'token_approval'
+  | 'gas_fee_calculation'
+  | 'contract_inspection'
+  | 'event_search'
+  | 'cross_chain_message'
   | 'unknown';
 
 /**
@@ -78,6 +83,9 @@ function extractChain(text: string): string {
     { regex: /polygon|matic/i, name: 'polygon' },
     { regex: /arbitrum/i, name: 'arbitrum' },
     { regex: /optimism|op/i, name: 'optimism' },
+    { regex: /gnosis|xdai/i, name: 'gnosis' },
+    { regex: /redstone/i, name: 'redstone' },
+    { regex: /kinto/i, name: 'kinto' },
   ];
 
   for (const pattern of chainPatterns) {
@@ -100,11 +108,132 @@ function extractLimit(text: string): number | undefined {
 }
 
 /**
+ * Extract date/time range from query
+ */
+function extractTimeRange(text: string): { from?: string; to?: string } | undefined {
+  // Try to extract date ranges like "May 2025" or "Nov 08 2024"
+  const datePatterns = [
+    { regex: /(\w+\s+\d{1,2}[,\s]+\d{4})/i, format: 'full' },
+    { regex: /(\w+\s+\d{4})/i, format: 'month-year' },
+    { regex: /(\d{4}-\d{2}-\d{2})/i, format: 'iso' },
+  ];
+
+  for (const pattern of datePatterns) {
+    const match = text.match(pattern.regex);
+    if (match) {
+      return { from: match[1], to: new Date().toISOString().split('T')[0] };
+    }
+  }
+
+  // Extract "before" or "after" dates
+  const beforeMatch = text.match(/before\s+([^?]+)/i);
+  const afterMatch = text.match(/after\s+([^?]+)/i);
+
+  if (beforeMatch || afterMatch) {
+    return {
+      from: afterMatch ? afterMatch[1] : undefined,
+      to: beforeMatch ? beforeMatch[1] : new Date().toISOString().split('T')[0],
+    };
+  }
+
+  return undefined;
+}
+
+/**
+ * Extract token from query
+ */
+function extractToken(text: string): string | undefined {
+  // Common token symbols
+  const tokenSymbols = ['USDC', 'USDT', 'DAI', 'WETH', 'OP', 'UNI', 'LINK', 'WBTC', 'ARB'];
+  
+  for (const symbol of tokenSymbols) {
+    if (text.includes(symbol)) {
+      return symbol;
+    }
+  }
+  
+  return undefined;
+}
+
+/**
  * Parse Web3 query from natural language
  */
 export function parseWeb3Query(input: string): ParsedQuery {
   const lowerInput = input.toLowerCase();
   const trimmedInput = input.trim();
+
+  // Check for token approval queries (early detection)
+  if (/approval|allowance|approved|allow/i.test(lowerInput) && /token/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    const ensName = extractENSName(input);
+    const token = extractToken(input);
+    
+    return {
+      type: 'token_approval',
+      entities: {
+        address: address || undefined,
+        ensName: ensName || undefined,
+        token: token || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for gas fee calculation queries
+  if (/gas.*fee|total.*gas|calculate.*gas/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    const timeRange = extractTimeRange(input);
+    
+    return {
+      type: 'gas_fee_calculation',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+        timeRange: timeRange ? JSON.stringify(timeRange) : undefined,
+      },
+      raw: input,
+    };
+  }
+
+  // Check for contract inspection queries
+  if (/blacklist|functionality|methods.*emit|inspect/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    
+    return {
+      type: 'contract_inspection',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for event search queries
+  if (/logs.*emit|events.*emit|which.*methods/i.test(lowerInput)) {
+    const address = extractAddress(input);
+    
+    return {
+      type: 'event_search',
+      entities: {
+        address: address || undefined,
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
+
+  // Check for cross-chain message queries
+  if (/cross.*chain|message.*rollup|withdrawal|deposit.*rollup/i.test(lowerInput)) {
+    return {
+      type: 'cross_chain_message',
+      entities: {
+        chain: extractChain(input),
+      },
+      raw: input,
+    };
+  }
 
   // Check for latest block queries
   if (
