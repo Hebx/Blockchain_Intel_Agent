@@ -9,12 +9,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
 import ChainBadge from '@/components/web3/ChainBadge';
 import ErrorDisplay from '@/components/web3/ErrorDisplay';
 import { LoadingState } from '@/components/web3/LoadingStates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare, Blocks, Activity, Zap, RefreshCw } from 'lucide-react';
+import { Sparkles, TrendingUp, Wallet, Coins, MessageSquare, Blocks, Activity, Zap, RefreshCw, Plus } from 'lucide-react';
 import { chatRepository } from '@/lib/db/chat-repository';
 import type { ChatWithMetadata, MessageWithMetadata } from '@/lib/db/chat-repository';
 
@@ -141,7 +142,6 @@ export default function Web3AgentPage() {
 
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     transport: customTransport,
-    initialMessages: [],
     onFinish: async ({ message }) => {
       // Save assistant message to database
       if (currentChatId) {
@@ -180,6 +180,36 @@ export default function Web3AgentPage() {
       }
     },
   });
+
+  // Load messages when chat changes (after useChat is initialized)
+  useEffect(() => {
+    const loadMessagesForChat = async () => {
+      if (!currentChatId || !setMessages) return;
+      
+      try {
+        const dbMessages = await chatRepository.getMessages(currentChatId);
+        if (dbMessages && dbMessages.length > 0) {
+          // Convert to AI SDK format
+          const formattedMessages = dbMessages.map(msg => ({
+            id: msg.id,
+            role: msg.role as 'user' | 'assistant',
+            content: msg.content,
+            parts: [{ type: 'text' as const, text: msg.content }],
+          }));
+          
+          setMessages(formattedMessages);
+        } else {
+          setMessages([]);
+        }
+      } catch (error) {
+        console.error('Failed to load messages:', error);
+      }
+    };
+    
+    if (currentChatId) {
+      loadMessagesForChat();
+    }
+  }, [currentChatId, setMessages]);
 
   const handleSubmit = async (text: string, submittedChainId: number) => {
     // Check if query has placeholder that needs to be filled
@@ -253,37 +283,40 @@ export default function Web3AgentPage() {
       
       <div className="flex flex-col flex-1 h-screen">
         {/* Header */}
-        <header className="border-b p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-white hover:bg-white/20"
-                onClick={() => setShowSidebar(!showSidebar)}
-              >
-                <MessageSquare className="h-5 w-5" />
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold flex items-center gap-2">
-                  <Sparkles className="h-6 w-6" />
-                  Web3 Intelligence Agent
-                </h1>
-                <p className="text-sm opacity-90">Ask questions about blockchain data powered by AI</p>
+        <header className="border-b bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 text-white shadow-lg">
+          <div className="p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="text-white hover:bg-white/20 transition-colors"
+                  onClick={() => setShowSidebar(!showSidebar)}
+                >
+                  <MessageSquare className="h-5 w-5" />
+                </Button>
+                <Separator orientation="vertical" className="h-8 bg-white/20" />
+                <div>
+                  <h1 className="text-2xl font-bold flex items-center gap-2 animate-fade-in">
+                    <Sparkles className="h-6 w-6 animate-pulse" />
+                    Web3 Intelligence Agent
+                  </h1>
+                  <p className="text-sm opacity-90 font-light">Ask questions about blockchain data powered by AI</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`text-white hover:bg-white/20 ${skipCache ? 'bg-white/30' : ''}`}
-                onClick={() => setSkipCache(!skipCache)}
-                title={skipCache ? 'Cache bypassed - click to enable cache' : 'Cache enabled - click to bypass'}
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                {skipCache ? 'Cache OFF' : 'Cache ON'}
-              </Button>
-              <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20" />
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`text-white hover:bg-white/20 transition-all duration-200 ${skipCache ? 'bg-white/30' : ''}`}
+                  onClick={() => setSkipCache(!skipCache)}
+                  title={skipCache ? 'Cache bypassed - click to enable cache' : 'Cache enabled - click to bypass'}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${skipCache ? 'animate-spin' : ''}`} />
+                  {skipCache ? 'Cache OFF' : 'Cache ON'}
+                </Button>
+                <ChainBadge chainId={chainId} className="bg-white/10 text-white border-white/20 backdrop-blur-sm" />
+              </div>
             </div>
           </div>
         </header>
@@ -301,20 +334,26 @@ export default function Web3AgentPage() {
           )}
           
           {!isLoading && messages.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mb-10">
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  <div className="p-3 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl">
-                    <Sparkles className="h-8 w-8 text-white" />
+            <div className="text-center py-16 animate-fade-in">
+              <div className="mb-12">
+                <div className="flex items-center justify-center gap-4 mb-6">
+                  <div className="p-4 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 rounded-3xl shadow-xl animate-pulse">
+                    <Sparkles className="h-10 w-10 text-white" />
                   </div>
-                  <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Welcome to Web3 Agent!
-                  </h2>
+                  <div>
+                    <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+                      Welcome to Web3 Agent!
+                    </h2>
+                  </div>
                 </div>
-                <p className="text-gray-600 text-lg">
-                  Ask me anything about the blockchain. Try these queries:
+                <p className="text-gray-600 text-lg font-medium mb-2">
+                  Ask me anything about the blockchain
+                </p>
+                <p className="text-gray-500 text-sm">
+                  Powered by AI + Blockscout data
                 </p>
               </div>
+              <Separator className="mb-8" />
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
                 <QueryCard
                   icon={<TrendingUp className="h-5 w-5" />}
@@ -392,31 +431,36 @@ export default function Web3AgentPage() {
             </div>
           )}
 
-          {messages.map(message => (
+          {messages.map((message, idx) => (
             <div
               key={message.id}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}
+              style={{ animationDelay: `${idx * 0.05}s` }}
             >
               <Card
-                className={`max-w-3xl ${
+                className={`max-w-3xl shadow-md transition-all duration-200 hover:shadow-lg ${
                   message.role === 'user'
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white'
+                    ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white border-blue-600'
+                    : 'bg-white border-gray-200'
                 }`}
               >
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between gap-2 mb-2">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant={message.role === 'user' ? 'secondary' : 'default'} className={message.role === 'user' ? 'bg-blue-700' : ''}>
+                      <Badge 
+                        variant={message.role === 'user' ? 'secondary' : 'default'} 
+                        className={`${message.role === 'user' ? 'bg-white/20 text-white border-white/30' : ''}`}
+                      >
                         {message.role === 'user' ? '👤 You' : '🤖 AI'}
                       </Badge>
                       {message.role === 'user' && (
-                        <ChainBadge chainId={chainId} className="text-xs bg-white/10 text-white border-white/20" />
+                        <ChainBadge chainId={chainId} className="text-xs bg-white/20 text-white border-white/30" />
                       )}
                     </div>
                   </div>
-                  <div className="whitespace-pre-wrap">
-                    {message.parts.map((part: any, idx: number) => 
+                  <Separator className={message.role === 'user' ? 'bg-white/20 mb-3' : 'bg-gray-200 mb-3'} />
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                    {message.parts.map((part: any, partIdx: number) => 
                       part.type === 'text' ? part.text : null
                     )}
                   </div>
@@ -435,8 +479,8 @@ export default function Web3AgentPage() {
               onRetry={() => {
                 // Retry last message
                 const lastUserMessage = messages.filter(m => m.role === 'user').pop();
-                if (lastUserMessage && 'text' in lastUserMessage) {
-                  sendMessage({ text: lastUserMessage.text || '' });
+                if (lastUserMessage && 'text' in lastUserMessage && typeof lastUserMessage.text === 'string') {
+                  sendMessage({ text: lastUserMessage.text });
                 }
               }}
               showDetails={true}
@@ -479,16 +523,16 @@ function QueryCard({
 }) {
   return (
     <Card 
-      className="cursor-pointer hover:shadow-xl transition-all duration-200 hover:border-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:scale-[1.02] group"
+      className="cursor-pointer hover:shadow-xl transition-all duration-300 border-gray-200 hover:border-blue-500 hover:scale-[1.03] group"
       onClick={onClick}
     >
-      <CardContent className="p-6 group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:to-purple-50 transition-colors">
+      <CardContent className="p-6 group-hover:bg-gradient-to-br group-hover:from-blue-50 group-hover:via-purple-50 group-hover:to-pink-50 transition-all duration-300">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg text-white group-hover:scale-110 transition-transform">
+          <div className="p-3 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl text-white group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg">
             {icon}
           </div>
           <div className="flex-1 text-left">
-            <h3 className="font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{title}</h3>
+            <h3 className="font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors text-base">{title}</h3>
             <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
           </div>
         </div>

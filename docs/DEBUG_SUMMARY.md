@@ -5,11 +5,21 @@
 ### 1. ✅ FIXED: Invalid `page_size` Parameter
 
 **Error**:
+
 ```json
-{"errors":[{"title":"Invalid value","source":{"pointer":"/page_size"},"detail":"Unexpected field: page_size"}]}
+{
+  "errors": [
+    {
+      "title": "Invalid value",
+      "source": { "pointer": "/page_size" },
+      "detail": "Unexpected field: page_size"
+    }
+  ]
+}
 ```
 
 **Fixed In**: `lib/web3/blockscout-mcp-rest.ts`
+
 - Removed `page_size` from `getTransactionsByAddress()`
 - Removed `page_size` from `getTokenTransfers()`
 - Removed `page_size` from `getTokenHolders()`
@@ -19,6 +29,7 @@
 ### 2. ⚠️ Expected: Transaction Not Found on Redstone
 
 **Error**:
+
 ```
 Blockscout API error 404: {"message":"Not found"}
 ```
@@ -40,7 +51,7 @@ Blockscout API error 404: {"message":"Not found"}
 ```
 Prompt 1 (Token Approval): ✅ 200 OK - 9971ms - 435 tokens
 Prompt 2 (Gas Fee): ⚠️ API Error 422 - Now fixed
-Prompt 3 (Event Search): ⚠️ API Error 422 - Now fixed  
+Prompt 3 (Event Search): ⚠️ API Error 422 - Now fixed
 Prompt 4 (Transaction): ❌ 404 - Expected (tx doesn't exist)
 Prompts 5-8: Server interrupted
 ```
@@ -50,12 +61,14 @@ Prompts 5-8: Server interrupted
 ### To Complete Testing:
 
 1. **Restart the server** with the fixed code:
+
    ```bash
    # Stop current server (Ctrl+C)
    pnpm dev
    ```
 
 2. **Test each prompt** in the browser:
+
    - Go to: `http://localhost:3000/web3-agent`
    - Try each of the 8 example prompts
    - Verify responses are generated
@@ -76,7 +89,7 @@ Prompts 5-8: Server interrupted
 **Status**: ✅ **Fixed and Ready to Test**  
 **Fixes Applied**: 1 critical bug fixed (page_size parameter)  
 **Tests Passing**: 1/4 (prompt 1 worked perfectly)  
-**Remaining**: Need to retest with fixed code  
+**Remaining**: Need to retest with fixed code
 
 The system is now ready for complete testing. The main bug (page_size parameter) has been fixed and the code is committed.
 
@@ -95,4 +108,3 @@ curl -X POST http://localhost:3000/api/web3-agent \
   -H "Content-Type: application/json" \
   -d '{"messages":[{"role":"user","parts":[{"type":"text","text":"What is the latest block on Ethereum?"}]}],"chainId":1}'
 ```
-

@@ -8,52 +8,72 @@ The query parser has been significantly enhanced to support complex blockchain q
 
 Running `npx tsx scripts/test-simple.ts` shows all prompts are correctly parsed:
 
-| # | Prompt Type | Status | Detected Type | Chain | Key Features |
-|---|-------------|--------|---------------|-------|--------------|
-| 1 | Token Approval | ✅ | `token_approval` | Optimism | ENS resolution, OP token |
-| 2 | Gas Calculation | ✅ | `gas_fee_calculation` | Ethereum | Date range, May 2024 |
-| 3 | Event Search | ✅ | `event_search` | Ethereum | Log filtering |
-| 4 | Transaction Info | ✅ | `transaction_summary` | Redstone | 64-char hash detection |
-| 5 | Contract Inspection | ✅ | `contract_inspection` | Arbitrum | Blacklist functionality |
-| 6 | Latest Block | ✅ | `latest_block` | Gnosis | Alternative chain support |
-| 7 | Event Methods | ✅ | `contract_inspection` | Ethereum | Method analysis |
-| 8 | Cross-Chain | ✅ | `cross_chain_message` | Base/Arbitrum | L2↔L1 messages |
+| #   | Prompt Type         | Status | Detected Type         | Chain         | Key Features              |
+| --- | ------------------- | ------ | --------------------- | ------------- | ------------------------- |
+| 1   | Token Approval      | ✅     | `token_approval`      | Optimism      | ENS resolution, OP token  |
+| 2   | Gas Calculation     | ✅     | `gas_fee_calculation` | Ethereum      | Date range, May 2024      |
+| 3   | Event Search        | ✅     | `event_search`        | Ethereum      | Log filtering             |
+| 4   | Transaction Info    | ✅     | `transaction_summary` | Redstone      | 64-char hash detection    |
+| 5   | Contract Inspection | ✅     | `contract_inspection` | Arbitrum      | Blacklist functionality   |
+| 6   | Latest Block        | ✅     | `latest_block`        | Gnosis        | Alternative chain support |
+| 7   | Event Methods       | ✅     | `contract_inspection` | Ethereum      | Method analysis           |
+| 8   | Cross-Chain         | ✅     | `cross_chain_message` | Base/Arbitrum | L2↔L1 messages            |
 
 ## New Query Types Supported
 
 ### 1. Token Approval Queries
+
 **Pattern**: Approval/allowance questions with ENS names
+
 ```typescript
-Type: 'token_approval'
-Entities: { ensName, token, chain }
+Type: "token_approval";
+Entities: {
+  ensName, token, chain;
+}
 ```
 
 ### 2. Gas Fee Calculations
+
 **Pattern**: Gas fee calculations with time ranges
+
 ```typescript
-Type: 'gas_fee_calculation'
-Entities: { address, chain, timeRange }
+Type: "gas_fee_calculation";
+Entities: {
+  address, chain, timeRange;
+}
 ```
 
 ### 3. Contract Inspection
+
 **Pattern**: Functionality checks, blacklisting, method analysis
+
 ```typescript
-Type: 'contract_inspection'
-Entities: { address, chain }
+Type: "contract_inspection";
+Entities: {
+  address, chain;
+}
 ```
 
 ### 4. Event Search
+
 **Pattern**: Finding specific events or methods that emit events
+
 ```typescript
-Type: 'event_search'
-Entities: { address, chain }
+Type: "event_search";
+Entities: {
+  address, chain;
+}
 ```
 
 ### 5. Cross-Chain Messages
+
 **Pattern**: L2 to L1 messages, rollup withdrawals
+
 ```typescript
-Type: 'cross_chain_message'
-Entities: { chain }
+Type: "cross_chain_message";
+Entities: {
+  chain;
+}
 ```
 
 ## Enhanced Chain Support
@@ -62,14 +82,14 @@ Added support for additional chains:
 
 ```typescript
 const chainIdMap = {
-  ethereum: 1,     // ✅ Existing
-  base: 8453,      // ✅ Existing
-  optimism: 10,    // ✅ Existing
-  polygon: 137,    // ✅ Existing
+  ethereum: 1, // ✅ Existing
+  base: 8453, // ✅ Existing
+  optimism: 10, // ✅ Existing
+  polygon: 137, // ✅ Existing
   arbitrum: 42161, // ✅ Existing
-  gnosis: 100,     // 🆕 Added
-  redstone: 901,   // 🆕 Added
-  kinto: 7887,     // 🆕 Added
+  gnosis: 100, // 🆕 Added
+  redstone: 901, // 🆕 Added
+  kinto: 7887, // 🆕 Added
 };
 ```
 
@@ -90,7 +110,7 @@ Enhanced date extraction for time-based queries:
 Automatic detection of common token symbols:
 
 ```typescript
-Supported: USDC, USDT, DAI, WETH, OP, UNI, LINK, WBTC, ARB
+Supported: USDC, USDT, DAI, WETH, OP, UNI, LINK, WBTC, ARB;
 ```
 
 ## API Handler Enhancements
@@ -111,7 +131,7 @@ New `directApiCall` method added to `CachedBlockscoutClient`:
 // Example usage for cross-chain messages:
 await cachedClient.directApiCall(
   chainId,
-  '/api/v2/arbitrum/messages/from-rollup',
+  "/api/v2/arbitrum/messages/from-rollup",
   {}
 );
 ```
@@ -119,11 +139,13 @@ await cachedClient.directApiCall(
 ## How to Test
 
 ### Quick Parser Test
+
 ```bash
 npx tsx scripts/test-simple.ts
 ```
 
 ### Full API Test (requires server running)
+
 ```bash
 # Terminal 1: Start the dev server
 pnpm dev
@@ -133,6 +155,7 @@ npx tsx scripts/test-example-prompts.ts
 ```
 
 ### Manual UI Test
+
 1. Start dev server: `pnpm dev`
 2. Navigate to: `http://localhost:3000/web3-agent`
 3. Try the prompts from `docs/EXAMPLE_PROMPTS_TEST.md`
@@ -140,16 +163,19 @@ npx tsx scripts/test-example-prompts.ts
 ## Files Modified
 
 ### Core Changes
+
 - ✅ `lib/web3/query-parser.ts` - Enhanced parser with 5 new query types
 - ✅ `app/api/web3-agent/route.ts` - Added handlers for new query types
 - ✅ `lib/web3/cached-blockscout.ts` - Added directApiCall method
 - ✅ `lib/web3/blockscout-mcp-rest.ts` - Implemented direct API call
 
 ### Test Files
+
 - ✅ `scripts/test-simple.ts` - Parser validation test
 - ✅ `scripts/test-example-prompts.ts` - Full API test suite (ready to run)
 
 ### Documentation
+
 - ✅ `docs/EXAMPLE_PROMPTS_TEST.md` - Comprehensive test guide
 - ✅ `docs/QUERY_PARSER_ENHANCEMENTS.md` - This document
 
@@ -180,7 +206,6 @@ npx tsx scripts/test-example-prompts.ts
 ✅ **Enhanced with 5 new query types**  
 ✅ **Added support for 3 new chains**  
 ✅ **Time-based queries with date ranges**  
-✅ **Direct API calls for chain-specific endpoints**  
+✅ **Direct API calls for chain-specific endpoints**
 
 The system is now capable of handling sophisticated blockchain queries that were not previously supported.
-
