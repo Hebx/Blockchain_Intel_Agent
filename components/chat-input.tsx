@@ -32,6 +32,7 @@ const ChatInput = forwardRef<HTMLInputElement, ChatInputProps>(
       <form
         onSubmit={e => {
           e.preventDefault();
+          console.log('Form submitted with text:', text, 'chainId:', chainId);
           if (text.trim() === '') return;
           onSubmit(text, chainId);
           setText('');

@@ -472,7 +472,7 @@ export async function POST(req: Request) {
       prompt,
       onFinish: async ({ text, usage }) => {
         console.log(`AI Response completed in ${Date.now() - startTime}ms`);
-        console.log(`Tokens: ${usage.totalTokens}`);
+        console.log(`Tokens: ${usage?.totalTokens ?? 'N/A'}`);
 
         // Cache AI output
         await cacheManager.set(aiOutputKey, text, CACHE_TTL.AI_OUTPUT);

@@ -97,6 +97,7 @@ export default function Web3AgentPage() {
   };
 
   const handleNewChat = () => {
+    console.log('handleNewChat called');
     router.push('/web3-agent');
   };
 
@@ -212,6 +213,8 @@ export default function Web3AgentPage() {
   }, [currentChatId, setMessages]);
 
   const handleSubmit = async (text: string, submittedChainId: number) => {
+    console.log('handleSubmit called with:', { text, submittedChainId });
+    
     // Check if query has placeholder that needs to be filled
     if (text.includes('[enter')) {
       alert('Please fill in the required information before submitting');
@@ -224,6 +227,7 @@ export default function Web3AgentPage() {
     
     // Ensure we have a chat ID
     if (!currentChatId) {
+      console.log('No currentChatId, creating new chat...');
       await createNewChat();
       // Wait a moment for the chat to be created
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -231,26 +235,31 @@ export default function Web3AgentPage() {
     
     // Save user message to database
     if (currentChatId) {
+      console.log('Saving message to database for chat:', currentChatId);
       try {
         // Create chat if it doesn't exist
         const chat = await chatRepository.getChat(currentChatId);
         if (!chat) {
+          console.log('Chat not found, creating new chat in DB...');
           await chatRepository.createChat('New Chat', null, submittedChainId);
         }
         
         // Save user message
+        console.log('Saving user message...');
         await chatRepository.saveMessage(currentChatId, {
           role: 'user',
           content: text,
           chain_id: submittedChainId,
           metadata: {},
         });
+        console.log('Message saved successfully');
       } catch (error) {
         console.error('Failed to save user message:', error);
       }
     }
     
     // Send message immediately - transport will use the updated ref value
+    console.log('Sending message via sendMessage...');
     sendMessage({ text });
   };
 

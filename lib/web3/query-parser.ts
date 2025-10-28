@@ -78,11 +78,11 @@ function isValidAddress(address: string): boolean {
  */
 function extractChain(text: string): string {
   const chainPatterns = [
-    { regex: /ethereum|eth/i, name: 'ethereum' },
-    { regex: /base/i, name: 'base' },
+    { regex: /ethereum|eth(?:\s|$)/i, name: 'ethereum' },
+    { regex: /base(?:\s|$)/i, name: 'base' },
     { regex: /polygon|matic/i, name: 'polygon' },
     { regex: /arbitrum/i, name: 'arbitrum' },
-    { regex: /optimism|op/i, name: 'optimism' },
+    { regex: /optimism/i, name: 'optimism' },
     { regex: /gnosis|xdai/i, name: 'gnosis' },
     { regex: /redstone/i, name: 'redstone' },
     { regex: /kinto/i, name: 'kinto' },
@@ -252,7 +252,8 @@ export function parseWeb3Query(input: string): ParsedQuery {
   if (
     /holders?|holdings|token\s+holders?|top\s+holders?/i.test(lowerInput)
   ) {
-    const token = extractAddress(input);
+    // Try to extract address first, then try token symbol
+    const token = extractAddress(input) || extractToken(input);
     const limit = extractLimit(input);
     return {
       type: 'token_holders',

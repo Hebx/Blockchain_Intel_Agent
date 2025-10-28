@@ -6,6 +6,7 @@
 ## Changes Made
 
 ### 1. **Header Enhancements**
+
 - ✅ Enhanced gradient: Added pink to blue-purple-pink gradient
 - ✅ Added shadow-lg for depth
 - ✅ Separator component between logo and title
@@ -14,6 +15,7 @@
 - ✅ Backdrop blur on chain badge
 
 ### 2. **Welcome Section**
+
 - ✅ Larger, more prominent welcome title (text-4xl)
 - ✅ Enhanced icon with shadow-xl and larger size
 - ✅ Gradient text animation
@@ -22,6 +24,7 @@
 - ✅ Added "Powered by AI + Blockscout data" tagline
 
 ### 3. **Query Cards**
+
 - ✅ Improved hover effects (scale, rotate icon)
 - ✅ Enhanced gradient backgrounds on hover
 - ✅ Better border colors and transitions
@@ -30,6 +33,7 @@
 - ✅ Better shadows and depth
 
 ### 4. **Message Cards**
+
 - ✅ Gradient backgrounds for user messages
 - ✅ Added Separator components in cards
 - ✅ Improved padding and spacing
@@ -39,6 +43,7 @@
 - ✅ Improved text readability
 
 ### 5. **Animations Added**
+
 - ✅ `animate-fade-in` - Smooth fade in for welcome section
 - ✅ `animate-slide-up` - Messages slide up with stagger
 - ✅ `animate-gradient` - Animated gradient text
@@ -46,6 +51,7 @@
 - ✅ Pulse animation for main icon
 
 ### 6. **Additional Polish**
+
 - ✅ Better color harmony (blue-purple-pink theme)
 - ✅ Consistent transition durations
 - ✅ Enhanced hover states throughout
@@ -55,12 +61,14 @@
 ## Visual Improvements
 
 ### Before:
+
 - Single color gradient header
 - Static query cards
 - Basic message cards
 - Simple hover effects
 
 ### After:
+
 - Tri-color gradient header (blue-purple-pink)
 - Animated, interactive query cards with icon rotation
 - Gradient message cards with separators
