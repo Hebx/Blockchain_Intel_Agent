@@ -1,0 +1,170 @@
+🚀 Starting API Tests for Example Prompts
+============================================================
+
+🧪 Testing: Token Approval Query with ENS
+   Prompt: "Is any approval set for OP token on Optimism chain by zeaver.eth?"
+   Chain ID: 10
+   Expected Type: token_approval
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Gas Fee Calculation
+   Prompt: "Calculate the total gas fees paid on Ethereum by address 0xcafebabe00000000000000000000000000000000 in May 2024"
+   Chain ID: 1
+   Expected Type: gas_fee_calculation
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Time-Based Event Query
+   Prompt: "Which 10 most recent logs were emitted by 0xFe89cc7aBB2C4183683ab71653C4cdc9B02D44b7 before Nov 08 2024 04:21:35 AM (-06:00 UTC)?"
+   Chain ID: 1
+   Expected Type: event_search
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Transaction Analysis on Redstone
+   Prompt: "Tell me more about the transaction 0xf8a55721f7e2dcf85690aaf81519f7bc820bc58a878fa5f81b12aef5ccda0efb on Redstone rollup"
+   Chain ID: 901
+   Expected Type: transaction_info
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Contract Inspection - Blacklisting
+   Prompt: "Is there any blacklisting functionality of USDT token on Arbitrum One?"
+   Chain ID: 42161
+   Expected Type: contract_inspection
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Latest Block on Gnosis
+   Prompt: "What is the latest block on Gnosis Chain and who is the block minter?"
+   Chain ID: 100
+   Expected Type: latest_block
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Event Search for Methods
+   Prompt: "Which methods of 0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6 on the Ethereum mainnet could emit SequencerBatchDelivered?"
+   Chain ID: 1
+   Expected Type: event_search
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+🧪 Testing: Cross-Chain Messages
+   Prompt: "What is the most recent executed cross-chain message sent from the Arbitrum rollup to the base layer?"
+   Chain ID: 42161
+   Expected Type: cross_chain_message
+API call failed: TypeError: fetch failed
+    at node:internal/deps/undici/undici:13484:13
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async parseQuery (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:83:22)
+    at async testPrompt (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:114:22)
+    at async runTests (/Users/heb/Developer/Neo/nodeops-web3-agent-node/scripts/test-example-prompts.ts:172:20) {
+  [cause]: AggregateError [ECONNREFUSED]: 
+      at internalConnectMultiple (node:net:1139:18)
+      at afterConnectMultiple (node:net:1712:7) {
+    code: 'ECONNREFUSED',
+    [errors]: [ [Error], [Error] ]
+  }
+}
+   ❌ Test failed: fetch failed
+
+============================================================
+📊 Test Results Summary
+============================================================
+❌ Token Approval Query with ENS
+❌ Gas Fee Calculation
+❌ Time-Based Event Query
+❌ Transaction Analysis on Redstone
+❌ Contract Inspection - Blacklisting
+❌ Latest Block on Gnosis
+❌ Event Search for Methods
+❌ Cross-Chain Messages
+
+============================================================
+Total: 0/8 tests passed
+============================================================
