@@ -87,7 +87,7 @@ export class BlockscoutRestClient {
    * Get tokens by address
    */
   async getTokensByAddress(chainId: number, address: string, cursor?: string): Promise<any> {
-    let url = `/api/v2/addresses/${address}/tokens?type=ERC-20&page_size=50`;
+    let url = `/api/v2/addresses/${address}/tokens?type=ERC-20`;
     if (cursor) {
       url += `&cursor=${encodeURIComponent(cursor)}`;
     }
@@ -106,7 +106,8 @@ export class BlockscoutRestClient {
     ageTo?: string,
     methods?: string[]
   ): Promise<any> {
-    let url = `/api/v2/addresses/${address}/transactions?page_size=50`;
+    // Blockscout API v2 uses pagination without page_size parameter
+    let url = `/api/v2/addresses/${address}/transactions`;
     
     // Note: Blockscout API v2 has different parameter names
     // age_from/age_to might need to be converted to timestamp or block range
@@ -136,9 +137,10 @@ export class BlockscoutRestClient {
     tokenAddress: string,
     pageSize: number = 50
   ): Promise<any> {
+    // Remove page_size as it's not supported by Blockscout API
     const data = await this.makeBlockscoutRequest(
       chainId, 
-      `/api/v2/tokens/${tokenAddress}/holders?page_size=${pageSize}`
+      `/api/v2/tokens/${tokenAddress}/holders`
     );
     return data;
   }
@@ -239,9 +241,10 @@ export class BlockscoutRestClient {
     pageSize: number = 50
   ): Promise<any> {
     try {
+      // Remove page_size as it's not supported by Blockscout API
       const data = await this.makeBlockscoutRequest(
         chainId,
-        `/api/v2/addresses/${address}/token-transfers?page_size=${pageSize}`
+        `/api/v2/addresses/${address}/token-transfers`
       );
       console.log(`Token transfers response for ${address}:`, JSON.stringify(data).substring(0, 300));
       return data;
