@@ -1,4 +1,4 @@
-# NodeOps Web3 AI Agent Node
+# Web3 AI Agent Node [WIP]
 
 An AI-powered Web3 blockchain intelligence agent built with [Vercel AI SDK](https://ai-sdk.dev/docs), [Next.js](https://nextjs.org/), [Blockscout MCP](https://mcp.blockscout.com), and Redis caching.
 
